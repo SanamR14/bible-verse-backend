@@ -3,46 +3,27 @@ const pool = require("../db");
 //post
 
 exports.addPrayerRequest = async (req, res) => {
-  const prayerRequest = req.body;
+  const { userid, username, prayer } = req.body;
 
-  if (!Array.isArray(plans)) {
-    return res
-      .status(400)
-      .json({ error: "Request body must be an array of plan objects" });
-  }
-
-  // Make sure all required fields are present
-  const valid = prayerRequest.every(
-    (p) => p.userId && p.userName && p.prayer && p.prayerid
-  );
-
-  if (!valid) {
+  // Validation
+  if (!userid || !username || !prayer) {
     return res.status(400).json({
-      error:
-        "All plan objects must have title, message, outerTitle, and author",
+      error: "Missing required fields: userid, username, or prayer",
     });
   }
 
-  // Build the query
-  const values = [];
-  const placeholders = plans.map((plan, i) => {
-    const index = i * 4;
-    values.push(plan.userId, plan.userName, plan.prayer, plan.prayerid);
-    return `($${index + 1}, $${index + 2}, $${index + 3}, $${index + 4})`;
-  });
-
   const query = `
-    INSERT INTO prayerRequest (userId, userName, prayer, prayerid)
-    VALUES ${placeholders.join(", ")}
+    INSERT INTO prayer_request (userid, username, prayer)
+    VALUES ($1, $2, $3)
     RETURNING *
   `;
 
   try {
-    const result = await pool.query(query, values);
-    res.status(201).json(result.rows);
+    const result = await pool.query(query, [userid, username, prayer]);
+    res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error("Bulk insert error:", err.message); // ← helpful for debugging
-    res.status(500).json({ error: "Failed to insert plans" });
+    console.error("Insert error:", err.message);
+    res.status(500).json({ error: "Failed to insert prayer request" });
   }
 };
 
@@ -50,7 +31,9 @@ exports.addPrayerRequest = async (req, res) => {
 
 exports.getAllPrayerRequest = async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM prayerRequest ORDER BY userId");
+    const result = await pool.query(
+      "SELECT * FROM prayerRequest ORDER BY userid"
+    );
     res.status(200).json(result.rows);
   } catch (err) {
     console.error("GET error:", err);
@@ -58,20 +41,21 @@ exports.getAllPrayerRequest = async (req, res) => {
   }
 };
 
-//get prayer requests by userId
-
+//get prayer requests by userid
 
 exports.getPrayerRequestByUser = async (req, res) => {
-  const { userId } = req.params;
+  const { userid } = req.params;
 
   try {
     const result = await pool.query(
-      "SELECT * FROM prayerRequest WHERE userId = $1 ORDER BY id DESC",
-      [userId]
+      "SELECT * FROM prayerRequest WHERE userid = $1 ORDER BY id DESC",
+      [userid]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ message: "No prayer requests found for this user" });
+      return res
+        .status(404)
+        .json({ message: "No prayer requests found for this user" });
     }
 
     res.status(200).json(result.rows);
@@ -80,27 +64,27 @@ exports.getPrayerRequestByUser = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
-
-
 
 //delete
 
 exports.deletePrayerRequest = async (req, res) => {
-  const { userId, prayerid } = req.params;
+  const { userid, prayerid } = req.params;
 
   try {
     const result = await pool.query(
-      "DELETE FROM prayerRequest WHERE userId = $1 AND prayerid = $2 RETURNING *",
-      [userId, prayerid]
+      "DELETE FROM prayerRequest WHERE userid = $1 AND prayerid = $2 RETURNING *",
+      [userid, prayerid]
     );
 
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Plan not found or prayerid mismatch" });
+      return res
+        .status(404)
+        .json({ error: "prayerRequest not found or prayerid mismatch" });
     }
 
-    res.status(200).json({ message: "Plan deleted successfully" });
+    res.status(200).json({ message: "prayerRequest deleted successfully" });
   } catch (err) {
     console.error("DELETE error:", err);
-    res.status(500).json({ error: "Failed to delete plan" });
+    res.status(500).json({ error: "Failed to delete prayer request" });
   }
 };
