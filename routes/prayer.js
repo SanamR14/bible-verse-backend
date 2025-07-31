@@ -11,7 +11,7 @@ const {
 
 router.get('/allPrayers', getAllPrayerRequest);
 router.get('/:userid', getPrayerRequestByUser);
-router.delete('/:userId/:prayerid', deletePrayerRequest);
+router.delete('/:userid/:prayerid', deletePrayerRequest);
 router.post('/prayerReq', addPrayerRequest);
 
 module.exports = router;
