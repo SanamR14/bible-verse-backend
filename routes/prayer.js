@@ -10,7 +10,7 @@ const {
 } = require('../controllers/prayerController');
 
 router.get('/allPrayers', getAllPrayerRequest);
-router.get('/:userId', getPrayerRequestByUser);
+router.get('/:userid', getPrayerRequestByUser);
 router.delete('/:userId/:prayerid', deletePrayerRequest);
 router.post('/prayerReq', addPrayerRequest);
 

@@ -32,7 +32,7 @@ exports.addPrayerRequest = async (req, res) => {
 exports.getAllPrayerRequest = async (req, res) => {
   try {
     const result = await pool.query(
-      "SELECT * FROM prayerRequest ORDER BY userid"
+      "SELECT * FROM prayer_request ORDER BY userid"
     );
     res.status(200).json(result.rows);
   } catch (err) {
@@ -48,7 +48,7 @@ exports.getPrayerRequestByUser = async (req, res) => {
 
   try {
     const result = await pool.query(
-      "SELECT * FROM prayerRequest WHERE userid = $1 ORDER BY id DESC",
+      "SELECT * FROM prayer_request WHERE userid = $1",
       [userid]
     );
 
@@ -72,7 +72,7 @@ exports.deletePrayerRequest = async (req, res) => {
 
   try {
     const result = await pool.query(
-      "DELETE FROM prayerRequest WHERE userid = $1 AND prayerid = $2 RETURNING *",
+      "DELETE FROM prayer_request WHERE userid = $1 AND prayerid = $2 RETURNING *",
       [userid, prayerid]
     );
 
