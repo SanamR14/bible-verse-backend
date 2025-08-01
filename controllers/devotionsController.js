@@ -1,7 +1,7 @@
 const pool = require('../db');
 
 // GET all
-exports.getAllPlansWithDays = async (req, res) => {
+exports.getAllDevotions = async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM devotions ORDER BY id DESC");
     res.status(200).json(result.rows);
@@ -12,7 +12,7 @@ exports.getAllPlansWithDays = async (req, res) => {
 };
 
 // POST
-exports.createPlanWithDays = async (req, res) => {
+exports.createDevotions = async (req, res) => {
   const { title, author, message, days } = req.body;
 
   try {
@@ -28,7 +28,7 @@ exports.createPlanWithDays = async (req, res) => {
 };
 
 // PUT (Update)
-exports.updatePlanWithDays = async (req, res) => {
+exports.updateDevotions = async (req, res) => {
   const { id } = req.params;
   const { title, author, message, days } = req.body;
 
@@ -50,7 +50,7 @@ exports.updatePlanWithDays = async (req, res) => {
 };
 
 // DELETE
-exports.deletePlanWithDays = async (req, res) => {
+exports.deleteDevotions = async (req, res) => {
   const { id } = req.params;
 
   try {
