@@ -111,12 +111,14 @@ const userRoute = require('./routes/user');
 const homeRoute = require('./routes/home');
 const authMiddleware = require('./middleware/auth');
 const prayerRequestRoute = require('./routes/prayer');
+const devotions = require('./routes/devotions');
 
 app.use('/home', homeRoute);
 app.use('/bibleverse', verseRoute);
 app.use('/auth', userRoute);
 app.use('/plans', plansRoute);
-app.use('/prayer-requests', prayerRequestRoute)
+app.use('/prayer-requests', prayerRequestRoute);
+app.use('/devotions', devotions);
 
 // Protected route
 app.get('/api/protected', authMiddleware, (req, res) => {
