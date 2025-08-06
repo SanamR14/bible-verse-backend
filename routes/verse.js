@@ -5,7 +5,7 @@ const {
   postVerse,
   updateVerse,
   deleteVerse,
-} = require("../controllers/dailyversecontroller");
+} = require("../controllers/dailyverseController");
 
 router.get("/", getAllVerses);
 router.post("/", postVerse);
