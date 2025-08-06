@@ -13,7 +13,7 @@ exports.getAllVerses = async (req, res) => {
 
 // POST new verse
 exports.postVerse = async (req, res) => {
-  const { verse, reference } = req.body;
+  const { verse, public_id, image_url } = req.body;
   try {
     const result = await pool.query(
       "INSERT INTO verse (verse, public_id, image_url) VALUES ($1, $2, $3) RETURNING *",
