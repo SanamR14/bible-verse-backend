@@ -121,10 +121,10 @@ app.use('/prayer-requests', prayerRequestRoute);
 app.use('/devotions', devotions);
 
 // Protected route
-app.get('/api/protected', authMiddleware, (req, res) => {
-  res.send(`Hello user with ID: ${req.user.userId}`);
-});
+// app.get('/api/protected', authMiddleware, (req, res) => {
+//   res.send(`Hello user with ID: ${req.user.userId}`);
+// });
 
 app.listen(port, () => {
-  console.log(`Server running at http://localhost:${port}`);
+  console.log(`Server running at ${port}`);
 });
