@@ -28,7 +28,7 @@ exports.postVerse = async (req, res) => {
 
 // PUT update verse
 exports.updateVerse = async (req, res) => {
-  const { id, verse, reference } = req.body;
+  const { id, verse, public_id, image_url } = req.body;
   try {
     const result = await pool.query(
       "UPDATE verse SET verse = $1, public_id = $2 WHERE id = $3 RETURNING *",
