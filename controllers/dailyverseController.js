@@ -31,8 +31,8 @@ exports.updateVerse = async (req, res) => {
   const { id, verse, public_id, image_url } = req.body;
   try {
     const result = await pool.query(
-      "UPDATE verse SET verse = $1, public_id = $2 WHERE id = $3 RETURNING *",
-      [verse, public_id, id]
+      "UPDATE verse SET verse = $1, public_id = $2, image_url = $3 WHERE id = $3 RETURNING *",
+      [verse, public_id, image_url, id]
     );
     res.status(200).json(result.rows[0]);
   } catch (err) {
