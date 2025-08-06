@@ -16,8 +16,8 @@ exports.postVerse = async (req, res) => {
   const { verse, reference } = req.body;
   try {
     const result = await pool.query(
-      "INSERT INTO verse (verse, reference) VALUES ($1, $2) RETURNING *",
-      [verse, reference]
+      "INSERT INTO verse (verse, public_id, image_url) VALUES ($1, $2, $3) RETURNING *",
+      [verse, public_id, image_url]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -31,8 +31,8 @@ exports.updateVerse = async (req, res) => {
   const { id, verse, reference } = req.body;
   try {
     const result = await pool.query(
-      "UPDATE verse SET verse = $1, reference = $2 WHERE id = $3 RETURNING *",
-      [verse, reference, id]
+      "UPDATE verse SET verse = $1, public_id = $2 WHERE id = $3 RETURNING *",
+      [verse, public_id, id]
     );
     res.status(200).json(result.rows[0]);
   } catch (err) {
