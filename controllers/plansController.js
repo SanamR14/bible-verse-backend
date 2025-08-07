@@ -12,47 +12,18 @@ exports.getAllPlans = async (req, res) => {
 };
 
 // POST a new plan
-exports.createPlan = async (req, res) => {
-  const plans = req.body;
-
-  if (!Array.isArray(plans)) {
-    return res
-      .status(400)
-      .json({ error: "Request body must be an array of plan objects" });
-  }
-
-  // Make sure all required fields are present
-  const valid = plans.every(
-    (p) => p.title && p.message && p.outertitle && p.author
-  );
-
-  if (!valid) {
-    return res.status(400).json({
-      error:
-        "All plan objects must have title, message, outertitle, and author",
-    });
-  }
-
-  // Build the query
-  const values = [];
-  const placeholders = plans.map((plan, i) => {
-    const index = i * 4;
-    values.push(plan.title, plan.message, plan.outertitle, plan.author);
-    return `($${index + 1}, $${index + 2}, $${index + 3}, $${index + 4})`;
-  });
-
-  const query = `
-    INSERT INTO plans (title, message, outertitle, author)
-    VALUES ${placeholders.join(", ")}
-    RETURNING *
-  `;
+exports.createDevotions = async (req, res) => {
+  const { title, message, outertitle, author, days } = req.body;
 
   try {
-    const result = await pool.query(query, values);
-    res.status(201).json(result.rows);
+    const result = await pool.query(
+      "INSERT INTO devotions (title, message, outertitle, author, days) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [title, message, outertitle, author, days]
+    );
+    res.status(201).json(result.rows[0]);
   } catch (err) {
-    console.error("Bulk insert error:", err.message); // ← helpful for debugging
-    res.status(500).json({ error: "Failed to insert plans" });
+    console.error("POST error:", err);
+    res.status(500).json({ error: "Failed to create plan" });
   }
 };
 
