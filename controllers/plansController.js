@@ -30,11 +30,11 @@ exports.createDevotions = async (req, res) => {
 // PUT (update) a plan
 exports.updatePlan = async (req, res) => {
   const { id } = req.params;
-  const { title, message, outertitle, author } = req.body;
+  const { title, message, outertitle, author, image } = req.body;
   try {
     const result = await pool.query(
-      "UPDATE plans SET title = $1, message = $2, outertitle = $3, author = $4 WHERE id = $5 RETURNING *",
-      [title, message, outertitle, author, id]
+      "UPDATE plans SET title = $1, message = $2, outertitle = $3, author = $4, image = $5 WHERE id = $6 RETURNING *",
+      [title, message, outertitle, author, image, id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Plan not found" });
