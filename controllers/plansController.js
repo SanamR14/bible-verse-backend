@@ -12,13 +12,13 @@ exports.getAllPlans = async (req, res) => {
 };
 
 // POST a new plan
-exports.createDevotions = async (req, res) => {
-  const { title, message, outertitle, author, days } = req.body;
+exports.createPlan = async (req, res) => {
+  const { title, message, outertitle, author, image, days } = req.body;
 
   try {
     const result = await pool.query(
-      "INSERT INTO devotions (title, message, outertitle, author, days) VALUES ($1, $2, $3, $4, $5) RETURNING *",
-      [title, message, outertitle, author, days]
+      "INSERT INTO devotions (title, message, outertitle, author, image, days) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *",
+      [title, message, outertitle, author, image, days]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
