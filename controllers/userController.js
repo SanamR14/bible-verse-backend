@@ -23,16 +23,33 @@ exports.registerUser = async (req, res) => {
   }
 
   try {
+    const existingUser = await pool.query(
+      'SELECT id FROM "users" WHERE email = $1',
+      [email]
+    );
+
+    if (existingUser.rows.length > 0) {
+      return res.status(400).json({ error: "Email already registered" });
+    }
+
     const hashedPassword = await bcrypt.hash(password, 10);
     const confirmHashedPassword = await bcrypt.hash(confirm_password, 10);
+
     const result = await pool.query(
       'INSERT INTO "users" (name, email, password, confirm_password, city, country) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, email',
       [name, email, hashedPassword, confirmHashedPassword, city, country]
     );
+
     res.status(201).json(result.rows[0]);
+
   } catch (err) {
     console.error(err);
-    res.status(400).json({ error: "Registration failed" });
+
+    if (err.code === "23505") {
+      return res.status(400).json({ error: "Email already registered" });
+    }
+
+    res.status(500).json({ error: "Registration failed" });
   }
 };
 
