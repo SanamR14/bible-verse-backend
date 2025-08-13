@@ -1,11 +1,8 @@
 const pool = require("../db");
 
-//post
-
 exports.addPrayerRequest = async (req, res) => {
   const { userid, username, prayer } = req.body;
 
-  // Validation
   if (!userid || !username || !prayer) {
     return res.status(400).json({
       error: "Missing required fields: userid, username, or prayer",
@@ -27,8 +24,6 @@ exports.addPrayerRequest = async (req, res) => {
   }
 };
 
-//get all prayer request
-
 exports.getAllPrayerRequest = async (req, res) => {
   try {
     const result = await pool.query(
@@ -41,8 +36,6 @@ exports.getAllPrayerRequest = async (req, res) => {
   }
 };
 
-//get prayer requests by userid
-
 exports.getPrayerRequestByUser = async (req, res) => {
   const { userid } = req.params;
 
@@ -54,8 +47,8 @@ exports.getPrayerRequestByUser = async (req, res) => {
 
     if (result.rows.length === 0) {
       return res
-        .status(404)
-        .json({ message: "No prayer requests found for this user" });
+        .status(200)
+        .json([]);
     }
 
     res.status(200).json(result.rows);
