@@ -27,7 +27,7 @@ exports.getUserSavedItems = async (req, res) => {
   try {
     const { userid } = req.params;
     const result = await pool.query(
-      "SELECT * FROM saved_items WHERE userid=$1 ORDER BY created_at DESC",
+      "SELECT * FROM saved_items WHERE userid=$1",
       [userid]
     );
     res.json(result.rows);
