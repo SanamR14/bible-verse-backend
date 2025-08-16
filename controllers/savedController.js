@@ -42,7 +42,7 @@ exports.getSavedItem = async (req, res) => {
   try {
     const { id } = req.params;
     const result = await pool.query(
-      "SELECT * FROM saved_items WHERE userid=$1 AND id=$1",
+      "SELECT * FROM saved_items WHERE userid=$1 AND id=$2",
       [userid, id]
     );
     if (result.rows.length === 0) {
@@ -61,7 +61,7 @@ exports.deleteSavedItem = async (req, res) => {
     const { id } = req.params;
 
     const result = await pool.query(
-      "DELETE FROM saved_items WHERE  userid=$1 AND id=$1 RETURNING *",
+      "DELETE FROM saved_items WHERE  userid=$1 AND id=$2 RETURNING *",
       [userid, id]
     );
 
