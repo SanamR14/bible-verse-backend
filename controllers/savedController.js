@@ -41,9 +41,10 @@ exports.getUserSavedItems = async (req, res) => {
 exports.getSavedItem = async (req, res) => {
   try {
     const { id } = req.params;
-    const result = await pool.query("SELECT * FROM saved_items WHERE id=$1", [
-      id,
-    ]);
+    const result = await pool.query(
+      "SELECT * FROM saved_items WHERE userid=$1 AND id=$1",
+      [userid, id]
+    );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Item not found" });
     }
@@ -60,8 +61,8 @@ exports.deleteSavedItem = async (req, res) => {
     const { id } = req.params;
 
     const result = await pool.query(
-      "DELETE FROM saved_items WHERE id=$1 RETURNING *",
-      [id]
+      "DELETE FROM saved_items WHERE  userid=$1 AND id=$1 RETURNING *",
+      [userid, id]
     );
 
     if (result.rows.length === 0) {
