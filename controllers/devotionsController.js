@@ -34,7 +34,7 @@ exports.updateDevotions = async (req, res) => {
 
   try {
     const result = await pool.query(
-      "UPDATE devotions SET title = $1, author = $2, message = $3, days = $4 issaved = $5 WHERE id = $6 RETURNING *",
+      "UPDATE devotions SET title = $1, author = $2, message = $3, days = $4, issaved = $5 WHERE id = $6 RETURNING *",
       [title, author, message, days, issaved, id]
     );
 
