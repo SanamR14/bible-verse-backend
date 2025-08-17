@@ -30,7 +30,7 @@ exports.createDevotions = async (req, res) => {
 // PUT (Update)
 exports.updateDevotions = async (req, res) => {
   const { id } = req.params;
-  const { title, author, message, days } = req.body;
+  const { title, author, message, days, issaved } = req.body;
 
   try {
     const result = await pool.query(
