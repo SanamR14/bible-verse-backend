@@ -13,12 +13,12 @@ exports.getAllDevotions = async (req, res) => {
 
 // POST
 exports.createDevotions = async (req, res) => {
-  const { title, author, message, days } = req.body;
+  const { title, author, message, days, issaved } = req.body;
 
   try {
     const result = await pool.query(
-      "INSERT INTO devotions (title, author, message, days) VALUES ($1, $2, $3, $4) RETURNING *",
-      [title, author, message, days]
+      "INSERT INTO devotions (title, author, message, days, issaved) VALUES ($1, $2, $3, $4, $5) RETURNING *",
+      [title, author, message, days, issaved]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -34,8 +34,8 @@ exports.updateDevotions = async (req, res) => {
 
   try {
     const result = await pool.query(
-      "UPDATE devotions SET title = $1, author = $2, message = $3, days = $4 WHERE id = $5 RETURNING *",
-      [title, author, message, days, id]
+      "UPDATE devotions SET title = $1, author = $2, message = $3, days = $4 issaved = $5 WHERE id = $6 RETURNING *",
+      [title, author, message, days, issaved, id]
     );
 
     if (result.rows.length === 0) {
