@@ -40,9 +40,9 @@ exports.getUserSavedItems = async (req, res) => {
 // Get a single saved item
 exports.getSavedItem = async (req, res) => {
   try {
-    const { id } = req.params;
-    const result = await pool.query("SELECT * FROM saved_items WHERE id=$1 ", [
-      id,
+    const { userid, item_id } = req.params;
+    const result = await pool.query("SELECT * FROM saved_items WHERE userid=$1 AND item_id=$2 ", [
+      userid, item_id
     ]);
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Item not found" });
