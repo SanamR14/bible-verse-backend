@@ -11,6 +11,8 @@ exports.getAllDevotions = async (req, res) => {
   }
 };
 
+
+
 // POST
 exports.createDevotions = async (req, res) => {
   const { title, author, message, days, issaved } = req.body;
