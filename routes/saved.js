@@ -12,6 +12,6 @@ const {
 router.post("/", addSavedItem);
 router.get("/:userid", getUserSavedItems);
 router.get("/:userid/:id", getSavedItem);
-router.delete("item_type/:userid/:item_id", deleteSavedItem);
+router.delete(":item_type/:userid/:item_id", deleteSavedItem);
 
 module.exports = router;
