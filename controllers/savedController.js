@@ -59,8 +59,7 @@ exports.getSavedItem = async (req, res) => {
 exports.deleteSavedItem = async (req, res) => {
   try {
     const { item_type, userid, item_id } = req.params;
-    userid = parseInt(userid, 10);
-    item_id = parseInt(item_id, 10);
+  
     const result = await pool.query(
       "DELETE FROM saved_items WHERE item_type=$1 AND userid=$2 AND item_id=$3 RETURNING *",
       [item_type, userid, item_id]
