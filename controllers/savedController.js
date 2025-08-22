@@ -59,7 +59,7 @@ exports.getSavedItemid = async (req, res) => {
   try {
     const { item_type, userid, item_id } = req.params;
     const result = await pool.query(
-      "SELECT * FROM saved_items WHERE item_type=$1 AND userid=$2 AND item_id=$3 ",
+      "SELECT * FROM saved_items WHERE item_type='$1' AND userid=$2 AND item_id=$3 ",
        [item_type, userid, item_id]
     );
     if (result.rows.length === 0) {
