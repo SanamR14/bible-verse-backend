@@ -63,7 +63,7 @@ exports.getSavedItemid = async (req, res) => {
       [item_type, parseInt(userid), parseInt(item_id)]
     );
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Item not found" });
+      return json("Not Saved");
     }
     res.json(result.rows[0]);
   } catch (err) {
