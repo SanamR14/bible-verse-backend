@@ -42,8 +42,25 @@ exports.getSavedItem = async (req, res) => {
   try {
     const { userid, id } = req.params;
     const result = await pool.query(
-      "SELECT * FROM saved_items WHERE userid=$1 AND (id=$2 OR item_id=$2)",
+      "SELECT * FROM saved_items WHERE userid=$1 AND id=$2 ",
       [userid, id]
+    );
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "Item not found" });
+    }
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error("Error fetching item:", err);
+    res.status(500).json({ error: "Server error" });
+  }
+};
+
+exports.getSavedItemid = async (req, res) => {
+  try {
+    const { userid, item_id } = req.params;
+    const result = await pool.query(
+      "SELECT * FROM saved_items WHERE userid=$1 AND item_id=$2 ",
+      [userid, item_id]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Item not found" });
