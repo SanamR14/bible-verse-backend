@@ -59,8 +59,8 @@ exports.getSavedItemid = async (req, res) => {
   try {
     const { item_type, userid, item_id } = req.params;
     const result = await pool.query(
-      "SELECT * FROM saved_items WHERE item_type='$1' AND userid=$2 AND item_id=$3 ",
-       [item_type, userid, item_id]
+      "SELECT * FROM saved_items WHERE item_type=$1 AND userid=$2 AND item_id=$3 ",
+      [item_type, parseInt(userid), parseInt(item_id)]
     );
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Item not found" });
