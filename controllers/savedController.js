@@ -62,10 +62,10 @@ exports.getSavedItemid = async (req, res) => {
       "SELECT * FROM saved_items WHERE item_type=$1 AND userid=$2 AND item_id=$3 ",
       [item_type, parseInt(userid), parseInt(item_id)]
     );
-    if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Item not found" });
-    }
-    res.json(result.rows[0]);
+    // if (result.rows.length === 0) {
+    //   return res.status(404).json({ error: "Item not found" });
+    // }
+    res.json(result.rows);
   } catch (err) {
     console.error("Error fetching item:", err);
     res.status(500).json({ error: "Server error" });
