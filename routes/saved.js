@@ -6,6 +6,7 @@ const {
   addSavedItem,
   getUserSavedItems,
   getSavedItem,
+  getSavedItemid,
   deleteSavedItem,
 } = require("../controllers/savedController");
 
