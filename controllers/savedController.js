@@ -3,16 +3,16 @@ const pool = require("../db");
 // Save an item post
 exports.addSavedItem = async (req, res) => {
   try {
-    const { userid, item_type, item_id, title, content } = req.body;
+    const { userid, item_type, item_id, title, message, author } = req.body;
 
     if (!userid || !item_type || !item_id) {
       return res.status(400).json({ error: "Missing required fields" });
     }
 
     const result = await pool.query(
-      `INSERT INTO saved_items (userid, item_type, item_id, title, content)
-       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
-      [userid, item_type, item_id, title, content]
+      `INSERT INTO saved_items (userid, item_type, item_id, title, message, author)
+       VALUES ($1, $2, $3, $4, $5, $6) RETURNING *`,
+      [userid, item_type, item_id, title, message, author]
     );
 
     res.json(result.rows[0]);
