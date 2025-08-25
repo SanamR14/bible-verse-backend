@@ -41,6 +41,31 @@ exports.updateVerse = async (req, res) => {
   }
 };
 
+exports.updateVerses = async (req, res) => {
+  const verses = req.body.verses;
+
+  if (!Array.isArray(verses) || verses.length === 0) {
+    return res.status(400).json({ error: "No verses provided" });
+  }
+
+  try {
+    const queries = verses.map(v => {
+      return pool.query(
+        "UPDATE verse SET verse = $1, public_id = $2, image_url = $3 WHERE id = $4 RETURNING *",
+        [v.verse, v.public_id, v.image_url, v.id]
+      );
+    });
+
+    const results = await Promise.all(queries);
+    const updated = results.map(r => r.rows[0]).filter(Boolean);
+
+    res.status(200).json({ message: "Verses updated", updated });
+  } catch (err) {
+    console.error("Error updating verses:", err);
+    res.status(500).json({ error: "Failed to update verses" });
+  }
+};
+
 // DELETE verse
 exports.deleteVerse = async (req, res) => {
   const { id } = req.params;
