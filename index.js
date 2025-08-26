@@ -29,7 +29,6 @@
 //   }
 // });
 
-
 // // GET all plans
 // app.get('/api/plans', async (req, res) => {
 //   try {
@@ -89,14 +88,13 @@
 //   }
 // });
 
-
 // app.listen(PORT, () => {
 //   console.log(`🚀 Server running at http://localhost:${PORT}`);
 // });
 
-const express = require('express');
-const cors = require('cors');
-require('dotenv').config();
+const express = require("express");
+const cors = require("cors");
+require("dotenv").config();
 
 const app = express();
 const port = process.env.PORT || 3000;
@@ -105,22 +103,22 @@ app.use(cors());
 app.use(express.json());
 
 // Routes
-const plansRoute = require('./routes/plans');
-const verseRoute = require('./routes/verse');
-const userRoute = require('./routes/user');
-const homeRoute = require('./routes/home');
-const authMiddleware = require('./middleware/auth');
-const prayerRequestRoute = require('./routes/prayer');
-const devotions = require('./routes/devotions');
+const plansRoute = require("./routes/plans");
+const verseRoute = require("./routes/verse");
+const userRoute = require("./routes/user");
+const homeRoute = require("./routes/home");
+const authMiddleware = require("./middleware/auth");
+const prayerRequestRoute = require("./routes/prayer");
+const devotions = require("./routes/devotions");
 const savedRoutes = require("./routes/saved");
-const testimonyRoutes = require("./routes/testimonyRoutes");
+const testimonyRoutes = require("./routes/testimony");
 
-app.use('/home', homeRoute);
-app.use('/bibleverse', verseRoute);
-app.use('/auth', userRoute);
-app.use('/plans', plansRoute);
-app.use('/prayer-requests', prayerRequestRoute);
-app.use('/devotions', devotions);
+app.use("/home", homeRoute);
+app.use("/bibleverse", verseRoute);
+app.use("/auth", userRoute);
+app.use("/plans", plansRoute);
+app.use("/prayer-requests", prayerRequestRoute);
+app.use("/devotions", devotions);
 app.use("/saved", savedRoutes);
 app.use("/testimonies", testimonyRoutes);
 

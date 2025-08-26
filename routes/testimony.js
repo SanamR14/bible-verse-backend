@@ -6,7 +6,6 @@ const {
 } = require("../controllers/testimonyController");
 
 router.post("/", createTestimony);
-
 router.delete("/:id", deleteTestimony);
 
 module.exports = router;
