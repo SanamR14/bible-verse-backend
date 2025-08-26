@@ -39,3 +39,15 @@ exports.deleteTestimony = async (req, res) => {
     res.status(500).json({ error: "Server error" });
   }
 };
+
+exports.getAllTestimonies = async (req, res) => {
+  try {
+    const result = await pool.query(
+      "SELECT * FROM testimonies ORDER BY userid"
+    );
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("GET error:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
