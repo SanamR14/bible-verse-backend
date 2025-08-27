@@ -13,11 +13,11 @@ exports.getAllVerses = async (req, res) => {
 
 // POST new verse
 exports.postVerse = async (req, res) => {
-  const { verse, public_id, image_url } = req.body;
+  const { public_id, image_url } = req.body;
   try {
     const result = await pool.query(
-      "INSERT INTO verse (verse, public_id, image_url) VALUES ($1, $2, $3) RETURNING *",
-      [verse, public_id, image_url]
+      "INSERT INTO verse (public_id, image_url) VALUES ($1, $2) RETURNING *",
+      [public_id, image_url]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -28,11 +28,11 @@ exports.postVerse = async (req, res) => {
 
 // PUT update verse
 exports.updateVerse = async (req, res) => {
-  const { id, verse, public_id, image_url } = req.body;
+  const { id, public_id, image_url } = req.body;
   try {
     const result = await pool.query(
-      "UPDATE verse SET verse = $1, public_id = $2, image_url = $3 WHERE id = $4 RETURNING *",
-      [verse, public_id, image_url, id]
+      "UPDATE verse SET public_id = $1, image_url = $2 WHERE id = $3 RETURNING *",
+      [public_id, image_url, id]
     );
     res.status(200).json(result.rows[0]);
   } catch (err) {
@@ -49,15 +49,15 @@ exports.updateVerses = async (req, res) => {
   }
 
   try {
-    const queries = verses.map(v => {
+    const queries = verses.map((v) => {
       return pool.query(
-        "UPDATE verse SET verse = $1, public_id = $2, image_url = $3 WHERE id = $4 RETURNING *",
-        [v.verse, v.public_id, v.image_url, v.id]
+        "UPDATE verse SET public_id = $1, image_url = $2 WHERE id = $3 RETURNING *",
+        [v.public_id, v.image_url, v.id]
       );
     });
 
     const results = await Promise.all(queries);
-    const updated = results.map(r => r.rows[0]).filter(Boolean);
+    const updated = results.map((r) => r.rows[0]).filter(Boolean);
 
     res.status(200).json({ message: "Verses updated", updated });
   } catch (err) {
