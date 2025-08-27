@@ -13,11 +13,11 @@ exports.getAllVerses = async (req, res) => {
 
 // POST new verse
 exports.postVerse = async (req, res) => {
-  const { public_id, image_url } = req.body;
+  const { image_url } = req.body;
   try {
     const result = await pool.query(
-      "INSERT INTO verse (public_id, image_url) VALUES ($1, $2) RETURNING *",
-      [public_id, image_url]
+      "INSERT INTO verse (image_url) VALUES ($1) RETURNING *",
+      [image_url]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
@@ -28,11 +28,11 @@ exports.postVerse = async (req, res) => {
 
 // PUT update verse
 exports.updateVerse = async (req, res) => {
-  const { id, public_id, image_url } = req.body;
+  const { id, image_url } = req.body;
   try {
     const result = await pool.query(
-      "UPDATE verse SET public_id = $1, image_url = $2 WHERE id = $3 RETURNING *",
-      [public_id, image_url, id]
+      "UPDATE verse SET image_url = $1 WHERE id = $2 RETURNING *",
+      [image_url, id]
     );
     res.status(200).json(result.rows[0]);
   } catch (err) {
@@ -51,8 +51,8 @@ exports.updateVerses = async (req, res) => {
   try {
     const queries = verses.map((v) => {
       return pool.query(
-        "UPDATE verse SET public_id = $1, image_url = $2 WHERE id = $3 RETURNING *",
-        [v.public_id, v.image_url, v.id]
+        "UPDATE verse SET image_url = $1 WHERE id = $2 RETURNING *",
+        [v.image_url, v.id]
       );
     });
 
