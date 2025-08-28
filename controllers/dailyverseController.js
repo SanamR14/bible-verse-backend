@@ -3,7 +3,7 @@ const pool = require("../db");
 // GET all verses
 exports.getAllVerses = async (req, res) => {
   try {
-    const result = await pool.query("SELECT * FROM verse");
+    const result = await pool.query("SELECT * FROM verse ORDER BY id");
     res.status(200).json(result.rows);
   } catch (err) {
     console.error(err);
