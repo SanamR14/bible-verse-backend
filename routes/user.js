@@ -7,11 +7,12 @@ const {
   registerUser,
   loginUser,
   verifyEmail,
+  deleteUser,
 } = require("../controllers/userController");
 
 router.get("/", getUsers);
 router.post("/signup", registerUser);
-// router.delete("/:id", deleteUser);
+router.delete("/:id", deleteUser);
 router.post("/login", loginUser);
 router.get("/verify-email", verifyEmail);
 

@@ -93,10 +93,9 @@ exports.verifyEmail = async (req, res) => {
     const decoded = jwt.verify(token, process.env.JWT_SECRET);
     const userId = decoded.userId;
 
-    await pool.query(
-      'UPDATE "users" SET isverified = true WHERE id = $1',
-      [userId]
-    );
+    await pool.query('UPDATE "users" SET isverified = true WHERE id = $1', [
+      userId,
+    ]);
 
     res.status(200).json({ message: "Email verified successfully!" });
   } catch (err) {
@@ -132,5 +131,15 @@ exports.loginUser = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Login failed" });
+  }
+};
+
+exports.deleteUser = async (req, res) => {
+  const { id } = req.params;
+  try {
+    await pool.query('DELETE FROM "users" WHERE id = $1', [id]);
+    res.status(200).json({ message: "User deleted" });
+  } catch (err) {
+    res.status(400).json({ error: "Delete failed" });
   }
 };
