@@ -47,9 +47,9 @@ exports.registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // create user with "is_verified = false"
+    // create user with "isverified = false"
     const result = await pool.query(
-      'INSERT INTO "users" (name, email, password, city, country, is_verified) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, email',
+      'INSERT INTO "users" (name, email, password, city, country, isverified) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, email',
       [name, email, hashedPassword, city, country, false]
     );
 
@@ -94,7 +94,7 @@ exports.verifyEmail = async (req, res) => {
     const userId = decoded.userId;
 
     await pool.query(
-      'UPDATE "users" SET is_verified = true WHERE id = $1',
+      'UPDATE "users" SET isverified = true WHERE id = $1',
       [userId]
     );
 
