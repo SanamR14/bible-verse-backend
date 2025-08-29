@@ -95,7 +95,7 @@ exports.verifyUser = async (req, res) => {
     }
 
     await pool.query(
-      'UPDATE "users" SET is_verified = true, verify_token = NULL, verify_token_expiry = NULL WHERE id = $1',
+      'UPDATE "users" SET isverified = true, verify_token = NULL, verify_token_expiry = NULL WHERE id = $1',
       [user.id]
     );
 
