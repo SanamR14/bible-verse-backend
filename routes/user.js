@@ -6,13 +6,13 @@ const {
   getUsers,
   registerUser,
   loginUser,
-  verifyUser,
+  verifyEmail,
 } = require("../controllers/userController");
 
 router.get("/", getUsers);
 router.post("/signup", registerUser);
 // router.delete("/:id", deleteUser);
 router.post("/login", loginUser);
-router.get("/verify/:token", verifyUser);
+router.get("/verify-email", verifyEmail);
 
 module.exports = router;

@@ -4,12 +4,14 @@ const jwt = require("jsonwebtoken");
 const crypto = require("crypto");
 const nodemailer = require("nodemailer");
 
-// transporter (use Gmail or better: SendGrid/SMTP)
+// setup nodemailer transporter
 const transporter = nodemailer.createTransport({
-  service: "gmail",
+  host: process.env.SMTP_HOST,
+  port: process.env.SMTP_PORT,
+  secure: process.env.SMTP_SECURE === "true", // true for 465
   auth: {
-    user: process.env.EMAIL_USER, // your email
-    pass: process.env.EMAIL_PASS, // app password
+    user: process.env.SMTP_USER,
+    pass: process.env.SMTP_PASS,
   },
 });
 
@@ -25,7 +27,7 @@ exports.getUsers = async (req, res) => {
   }
 };
 
-// REGISTER user with verification
+// ✅ Register User with Email Verification
 exports.registerUser = async (req, res) => {
   const { name, email, password, confirm_password, city, country } = req.body;
 
@@ -45,64 +47,60 @@ exports.registerUser = async (req, res) => {
 
     const hashedPassword = await bcrypt.hash(password, 10);
 
-    // generate verification token
-    const token = crypto.randomBytes(32).toString("hex");
-    const expiry = new Date(Date.now() + 3600000); // 1h expiry
-
+    // create user with "is_verified = false"
     const result = await pool.query(
-      'INSERT INTO "users" (name, email, password, confirm_password, city, country, isverified, verify_token, verify_token_expiry) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id, name, email',
-      [
-        name,
-        email,
-        hashedPassword,
-        hashedPassword,
-        city,
-        country,
-        false,
-        token,
-        expiry,
-      ]
+      'INSERT INTO "users" (name, email, password, city, country, is_verified) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, email',
+      [name, email, hashedPassword, city, country, false]
     );
 
+    const newUser = result.rows[0];
+
+    // create email verification token (valid for 1 hour)
+    const verifyToken = jwt.sign(
+      { userId: newUser.id, email: newUser.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    const verifyUrl = `${process.env.FRONTEND_URL}/verify-email?token=${verifyToken}`;
+
     // send email
-    const verifyUrl = `https://your-backend.com/api/auth/verify/${token}`;
     await transporter.sendMail({
-      to: email,
-      subject: "Verify your account",
-      html: `<h2>Welcome, ${name}!</h2>
-             <p>Please verify your email by clicking below:</p>
-             <a href="${verifyUrl}">Verify Email</a>`,
+      from: `"Bible App" <${process.env.SMTP_USER}>`,
+      to: newUser.email,
+      subject: "Verify your email",
+      html: `
+        <h2>Welcome, ${newUser.name}!</h2>
+        <p>Please click the link below to verify your email:</p>
+        <a href="${verifyUrl}" target="_blank">Verify Email</a>
+      `,
     });
 
-    res.status(201).json({ message: "User registered, check email to verify" });
+    res.status(201).json({
+      message: "User registered. Please check your email to verify.",
+      user: { id: newUser.id, name: newUser.name, email: newUser.email },
+    });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Registration failed" });
   }
 };
+// ✅ Verify Email Endpoint
+exports.verifyEmail = async (req, res) => {
+  const { token } = req.query;
 
-// VERIFY user
-exports.verifyUser = async (req, res) => {
-  const { token } = req.params;
   try {
-    const result = await pool.query(
-      'SELECT * FROM "users" WHERE verify_token = $1 AND verify_token_expiry > NOW()',
-      [token]
-    );
-    const user = result.rows[0];
-    if (!user) {
-      return res.status(400).json({ error: "Invalid or expired token" });
-    }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    const userId = decoded.userId;
 
     await pool.query(
-      'UPDATE "users" SET isverified = true, verify_token = NULL, verify_token_expiry = NULL WHERE id = $1',
-      [user.id]
+      'UPDATE "users" SET is_verified = true WHERE id = $1',
+      [userId]
     );
 
-    res.status(200).json({ message: "Email verified successfully" });
+    res.status(200).json({ message: "Email verified successfully!" });
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Verification failed" });
+    res.status(400).json({ error: "Invalid or expired token" });
   }
 };
 
