@@ -17,7 +17,7 @@ const transporter = nodemailer.createTransport({
 exports.getUsers = async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, name, email, city, country, is_verified FROM "users"'
+      'SELECT id, name, email, city, country, isverified FROM "users"'
     );
     res.status(200).json(result.rows);
   } catch (err) {
@@ -50,7 +50,7 @@ exports.registerUser = async (req, res) => {
     const expiry = new Date(Date.now() + 3600000); // 1h expiry
 
     const result = await pool.query(
-      'INSERT INTO "users" (name, email, password, confirm_password, city, country, is_verified, verify_token, verify_token_expiry) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id, name, email',
+      'INSERT INTO "users" (name, email, password, confirm_password, city, country, isverified, verify_token, verify_token_expiry) VALUES ($1,$2,$3,$4,$5,$6,$7,$8,$9) RETURNING id, name, email',
       [
         name,
         email,
@@ -117,7 +117,7 @@ exports.loginUser = async (req, res) => {
 
     if (!user) return res.status(404).json({ error: "User not found" });
 
-    if (!user.is_verified) {
+    if (!user.isverified) {
       return res.status(403).json({ error: "Email not verified" });
     }
 
