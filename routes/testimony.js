@@ -6,8 +6,10 @@ const {
   getAllTestimonies,
 } = require("../controllers/testimonyController");
 
-router.post("/", createTestimony);
-router.delete("/:id", deleteTestimony);
-router.get("/", getAllTestimonies);
+const authMiddleware = require("./middleware/auth");
+
+router.post("/",authMiddleware, createTestimony);
+router.delete("/:id",authMiddleware, deleteTestimony);
+router.get("/",authMiddleware, getAllTestimonies);
 
 module.exports = router;

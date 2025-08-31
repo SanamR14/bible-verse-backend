@@ -10,10 +10,12 @@ const {
   deleteSavedItem,
 } = require("../controllers/savedController");
 
-router.post("/", addSavedItem);
-router.get("/:userid", getUserSavedItems);
-router.get("/:userid/:id", getSavedItem);
-router.get("/:item_type/:userid/:item_id", getSavedItemid);
-router.delete("/:item_type/:userid/:item_id", deleteSavedItem);
+const authMiddleware = require("./middleware/auth");
+
+router.post("/",authMiddleware, addSavedItem);
+router.get("/:userid",authMiddleware, getUserSavedItems);
+router.get("/:userid/:id",authMiddleware, getSavedItem);
+router.get("/:item_type/:userid/:item_id",authMiddleware, getSavedItemid);
+router.delete("/:item_type/:userid/:item_id",authMiddleware, deleteSavedItem);
 
 module.exports = router;

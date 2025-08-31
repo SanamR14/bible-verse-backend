@@ -1,10 +1,13 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-const controller = require('../controllers/devotionsController');
+const controller = require("../controllers/devotionsController");
 
-router.get('/', controller.getAllDevotions);
-router.post('/', controller.createDevotions);
-router.put('/:id', controller.updateDevotions);
-router.delete('/:id', controller.deleteDevotions);
+const authMiddleware = require("./middleware/auth");
+
+router.post("/", controller.createDevotions);
+
+router.get("/", authMiddleware, controller.getAllDevotions);
+router.put("/:id", authMiddleware, controller.updateDevotions);
+router.delete("/:id", authMiddleware, controller.deleteDevotions);
 
 module.exports = router;

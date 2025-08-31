@@ -10,9 +10,12 @@ const {
   // verifyEmail,
 } = require("../controllers/userController");
 
-router.get("/", getUsers);
+const authMiddleware = require("./middleware/auth");
+
+router.get("/",authMiddleware, getUsers);
+router.delete("/:id",authMiddleware, deleteUser);
+
 router.post("/signup", registerUser);
-router.delete("/:id", deleteUser);
 router.post("/login", loginUser);
 // router.get("/verify-email", verifyEmail);
 

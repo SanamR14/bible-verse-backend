@@ -1,17 +1,19 @@
-const express = require('express');
+const express = require("express");
 const router = express.Router();
-require('dotenv').config();
+require("dotenv").config();
 
 const {
   getAllPrayerRequest,
   getPrayerRequestByUser,
   deletePrayerRequest,
-  addPrayerRequest
-} = require('../controllers/prayerController');
+  addPrayerRequest,
+} = require("../controllers/prayerController");
 
-router.get('/allPrayers', getAllPrayerRequest);
-router.get('/:userid', getPrayerRequestByUser);
-router.delete('/:userid/:prayerid', deletePrayerRequest);
-router.post('/prayerReq', addPrayerRequest);
+const authMiddleware = require("./middleware/auth");
+
+router.get("/allPrayers", authMiddleware, getAllPrayerRequest);
+router.get("/:userid", authMiddleware, getPrayerRequestByUser);
+router.delete("/:userid/:prayerid", authMiddleware, deletePrayerRequest);
+router.post("/prayerReq", authMiddleware, addPrayerRequest);
 
 module.exports = router;

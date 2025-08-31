@@ -8,10 +8,13 @@ const {
   deleteVerse,
 } = require("../controllers/dailyverseController");
 
-router.get("/", getAllVerses);
+const authMiddleware = require("./middleware/auth");
+
+router.get("/",authMiddleware, getAllVerses);
+router.put("/",authMiddleware, updateVerse);
+router.put("/monthly/",authMiddleware, updateVerses);
+router.delete("/:id",authMiddleware, deleteVerse);
+
 router.post("/", postVerse);
-router.put("/", updateVerse);
-router.put("/monthly/", updateVerses);
-router.delete("/:id", deleteVerse);
 
 module.exports = router;
