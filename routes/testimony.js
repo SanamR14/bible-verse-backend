@@ -6,7 +6,7 @@ const {
   getAllTestimonies,
 } = require("../controllers/testimonyController");
 
-const authMiddleware = require("./middleware/auth");
+const authMiddleware = require("../middleware/auth");
 
 router.post("/",authMiddleware, createTestimony);
 router.delete("/:id",authMiddleware, deleteTestimony);

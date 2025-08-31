@@ -9,7 +9,7 @@ const {
   addPrayerRequest,
 } = require("../controllers/prayerController");
 
-const authMiddleware = require("./middleware/auth");
+const authMiddleware = require("../middleware/auth");
 
 router.get("/allPrayers", authMiddleware, getAllPrayerRequest);
 router.get("/:userid", authMiddleware, getPrayerRequestByUser);

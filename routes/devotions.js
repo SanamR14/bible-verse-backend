@@ -2,7 +2,7 @@ const express = require("express");
 const router = express.Router();
 const controller = require("../controllers/devotionsController");
 
-const authMiddleware = require("./middleware/auth");
+const authMiddleware = require("../middleware/auth");
 
 router.post("/", controller.createDevotions);
 
