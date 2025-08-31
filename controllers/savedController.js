@@ -83,12 +83,18 @@ exports.deleteSavedItem = async (req, res) => {
     );
     console.log(result.rows);
     if (result.rows.length === 0) {
-      return res.status(404).json({ error: "Item not found" });
+      return res
+        .status(404)
+        .json({ error: "Item not found", status: res.status() });
     }
 
-    res.json({ message: "Item removed from saved", item: result.rows[0] });
+    res.json({
+      message: "Item removed from saved",
+      item: result.rows[0],
+      status: res.status(),
+    });
   } catch (err) {
     console.error("Error deleting saved item:", err);
-    res.status(500).json({ error: "Server error" });
+    res.status(500).json({ error: "Server error", status: res.status() });
   }
 };
