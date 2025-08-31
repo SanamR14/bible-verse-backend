@@ -107,7 +107,6 @@ const plansRoute = require("./routes/plans");
 const verseRoute = require("./routes/verse");
 const userRoute = require("./routes/user");
 const homeRoute = require("./routes/home");
-const authMiddleware = require("./middleware/auth");
 const prayerRequestRoute = require("./routes/prayer");
 const devotions = require("./routes/devotions");
 const savedRoutes = require("./routes/saved");
@@ -121,7 +120,6 @@ app.use("/prayer-requests", prayerRequestRoute);
 app.use("/devotions", devotions);
 app.use("/saved", savedRoutes);
 app.use("/testimonies", testimonyRoutes);
-app.use(authMiddleware);
 
 // Protected route
 // app.get('/api/protected', authMiddleware, (req, res) => {
