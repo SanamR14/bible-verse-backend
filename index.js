@@ -121,6 +121,7 @@ app.use("/prayer-requests", prayerRequestRoute);
 app.use("/devotions", devotions);
 app.use("/saved", savedRoutes);
 app.use("/testimonies", testimonyRoutes);
+app.use(authMiddleware);
 
 // Protected route
 // app.get('/api/protected', authMiddleware, (req, res) => {
