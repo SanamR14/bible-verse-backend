@@ -51,3 +51,23 @@ exports.getAllTestimonies = async (req, res) => {
     res.status(500).json({ error: "Internal Server Error" });
   }
 };
+
+exports.getTestimoniesByUser = async (req, res) => {
+  const { userid } = req.params;
+
+  try {
+    const result = await pool.query(
+      "SELECT * FROM testimonies WHERE userid = $1",
+      [userid]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("GET error:", err);
+    res.status(500).json({ error: "Internal Server Error" });
+  }
+};
