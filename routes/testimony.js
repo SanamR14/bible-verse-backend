@@ -12,6 +12,6 @@ const authMiddleware = require("../middleware/auth");
 router.post("/", authMiddleware, createTestimony);
 router.delete("/:id", authMiddleware, deleteTestimony);
 router.get("/", authMiddleware, getAllTestimonies);
-router.get("/:id", authMiddleware, getTestimoniesByUser);
+router.get("/:userid", authMiddleware, getTestimoniesByUser);
 
 module.exports = router;
