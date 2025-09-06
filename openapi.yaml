@@ -34,7 +34,7 @@ components:
           type: string
           format: uuid
         userid:
-          type: integer
+          type: string
         username:
           type: string
         prayer:
@@ -100,11 +100,11 @@ components:
           type: string
           format: uuid
         userid:
-          type: integer
+          type: string
         item_type:
           type: string
         item_id:
-          type: integer
+          type: string
         title:
           type: string
         message:
@@ -242,7 +242,7 @@ paths:
         - name: userid
           in: path
           required: true
-          schema: { type: integer }
+          schema: { type: string }
       responses:
         "200": { description: List of testimonies by user }
 
@@ -426,7 +426,7 @@ paths:
       security:
         - bearerAuth: []
       parameters:
-        - { name: userid, in: path, required: true, schema: { type: integer } }
+        - { name: userid, in: path, required: true, schema: { type: string } }
       responses:
         "200": { description: List of saved items }
 
@@ -437,8 +437,8 @@ paths:
         - bearerAuth: []
       parameters:
         - { name: item_type, in: path, required: true, schema: { type: string } }
-        - { name: userid, in: path, required: true, schema: { type: integer } }
-        - { name: item_id, in: path, required: true, schema: { type: integer } }
+        - { name: userid, in: path, required: true, schema: { type: string } }
+        - { name: item_id, in: path, required: true, schema: { type: string } }
       responses:
         "200": { description: Saved item }
     delete:
@@ -447,7 +447,7 @@ paths:
         - bearerAuth: []
       parameters:
         - { name: item_type, in: path, required: true, schema: { type: string } }
-        - { name: userid, in: path, required: true, schema: { type: integer } }
-        - { name: item_id, in: path, required: true, schema: { type: integer } }
+        - { name: userid, in: path, required: true, schema: { type: string } }
+        - { name: item_id, in: path, required: true, schema: { type: string } }
       responses:
         "200": { description: Saved item deleted }
