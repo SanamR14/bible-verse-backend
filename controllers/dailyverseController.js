@@ -1,5 +1,32 @@
 const pool = require("../db");
 
+exports.getDailyVerse = async (req, res) => {
+  try {
+    // get total verse count
+    const countResult = await pool.query("SELECT COUNT(*) FROM verse");
+    const totalVerses = parseInt(countResult.rows[0].count, 10);
+
+    // choose verse by date
+    const dayOfYear = Math.floor(
+      (Date.now() - new Date(new Date().getFullYear(), 0, 0)) /
+        (1000 * 60 * 60 * 24)
+    );
+    const verseIndex = (dayOfYear % totalVerses) + 1;
+
+    const verseResult = await pool.query(
+      "SELECT verse, reference, image_url FROM verse WHERE id = $1",
+      [verseIndex]
+    );
+
+    const verse = verseResult.rows[0];
+
+    res.json(verse);
+  } catch (err) {
+    console.error("Error in /home:", err);
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 // GET all verses
 exports.getAllVerses = async (req, res) => {
   try {

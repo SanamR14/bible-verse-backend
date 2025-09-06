@@ -1,6 +1,7 @@
 const express = require("express");
 const router = express.Router();
 const {
+  getDailyVerse,
   getAllVerses,
   postVerse,
   updateVerse,
@@ -10,10 +11,11 @@ const {
 
 const authMiddleware = require("../middleware/auth");
 
-router.get("/",authMiddleware, getAllVerses);
-router.put("/",authMiddleware, updateVerse);
-router.put("/monthly/",authMiddleware, updateVerses);
-router.delete("/:id",authMiddleware, deleteVerse);
+router.get("/daily", authMiddleware, getDailyVerse);
+router.get("/", authMiddleware, getAllVerses);
+router.put("/", authMiddleware, updateVerse);
+router.put("/monthly/", authMiddleware, updateVerses);
+router.delete("/:id", authMiddleware, deleteVerse);
 
 router.post("/", postVerse);
 
