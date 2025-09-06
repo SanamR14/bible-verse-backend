@@ -14,7 +14,7 @@ exports.getDailyVerse = async (req, res) => {
     const verseIndex = (dayOfYear % totalVerses) + 1;
 
     const verseResult = await pool.query(
-      "SELECT verse, reference, image_url FROM verse WHERE id = $1",
+      "SELECT image_url FROM verse WHERE id = $1",
       [verseIndex]
     );
 
@@ -22,7 +22,7 @@ exports.getDailyVerse = async (req, res) => {
 
     res.json(verse);
   } catch (err) {
-    console.error("Error in /home:", err);
+    console.error("Error in :", err);
     res.status(500).json({ error: "Internal server error" });
   }
 };

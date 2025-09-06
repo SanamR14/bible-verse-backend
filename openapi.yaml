@@ -50,9 +50,7 @@ components:
     Verse:
       type: object
       properties:
-        id: { type: string, format: uuid }
-        verse: { type: string }
-        reference: { type: string }
+        id: { type: integer }
         image_url: { type: string }
 
     Devotion:
