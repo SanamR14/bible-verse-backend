@@ -62,14 +62,62 @@ exports.loginUser = async (req, res) => {
     if (!user) return res.status(404).json({ error: "User not found" });
     const match = await bcrypt.compare(password, user.password);
     if (!match) return res.status(401).json({ error: "Invalid password" });
+
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       process.env.JWT_SECRET,
       { expiresIn: "1h" }
     );
-    res.status(200).json({ message: "Login successful", token, user });
+
+    const refreshToken = jwt.sign(
+      { userId: user.id, email: user.email },
+      process.env.JWT_REFRESH_SECRET,
+      { expiresIn: "7d" }
+    );
+
+    res
+      .status(200)
+      .json({ message: "Login successful", token, refreshToken, user });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Login failed" });
+  }
+};
+
+exports.refreshToken = async (req, res) => {
+  const { token } = req.body;
+  if (!token) return res.status(401).json({ error: "No token provided" });
+
+  try {
+    const decoded = jwt.verify(token, process.env.JWT_REFRESH_SECRET);
+
+    const result = await pool.query('SELECT * FROM "users" WHERE id=$1', [
+      decoded.userId,
+    ]);
+    if (!result.rows[0] || result.rows[0].refresh_token !== token) {
+      return res.status(403).json({ error: "Invalid refresh token" });
+    }
+
+    const newAccessToken = jwt.sign(
+      { userId: decoded.userId, email: decoded.email },
+      process.env.JWT_SECRET,
+      { expiresIn: "1h" }
+    );
+
+    res.json({ accessToken: newAccessToken });
+  } catch (err) {
+    return res.status(403).json({ error: "Invalid or expired refresh token" });
+  }
+};
+
+exports.logoutUser = async (req, res) => {
+  const { userId } = req.body;
+  try {
+    await pool.query('UPDATE "users" SET refresh_token=NULL WHERE id=$1', [
+      userId,
+    ]);
+    res.json({ message: "Logged out successfully" });
+  } catch (err) {
+    res.status(500).json({ error: "Logout failed" });
   }
 };
