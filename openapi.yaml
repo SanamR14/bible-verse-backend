@@ -1,0 +1,453 @@
+openapi: 3.1.0
+info:
+  title: Bible Verse & Prayer App API
+  description: REST API for managing users, prayers, testimonies, devotions, plans, verses, and saved items.
+  version: 1.0.0
+servers:
+  - url: https://bible-verse-backend-1kvo.onrender.com
+
+components:
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+  schemas:
+    User:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        name:
+          type: string
+        email:
+          type: string
+        city:
+          type: string
+        country:
+          type: string
+    Testimony:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userid:
+          type: integer
+        username:
+          type: string
+        prayer:
+          type: string
+        testimony:
+          type: string
+    PrayerRequest:
+      type: object
+      properties:
+        prayerid:
+          type: string
+          format: uuid
+        userid:
+          type: string
+        username:
+          type: string
+        prayer:
+          type: string
+    Verse:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        image_url:
+          type: string
+    Devotion:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        author:
+          type: string
+        message:
+          type: string
+        days:
+          type: object
+    Plan:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        title:
+          type: string
+        outertitle:
+          type: string
+        author:
+          type: string
+        message:
+          type: string
+        image:
+          type: string
+        days:
+          type: object
+    SavedItem:
+      type: object
+      properties:
+        id:
+          type: string
+          format: uuid
+        userid:
+          type: integer
+        item_type:
+          type: string
+        item_id:
+          type: integer
+        title:
+          type: string
+        message:
+          type: string
+        author:
+          type: string
+
+security:
+  - bearerAuth: []
+
+paths:
+  /auth/signup:
+    post:
+      summary: Register a new user
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [name, email, password, confirm_password, city, country]
+              properties:
+                name: { type: string }
+                email: { type: string }
+                password: { type: string }
+                confirm_password: { type: string }
+                city: { type: string }
+                country: { type: string }
+      responses:
+        "201":
+          description: User registered successfully
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/User"
+
+  /auth/login:
+    post:
+      summary: Login and get JWT
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [email, password]
+              properties:
+                email: { type: string }
+                password: { type: string }
+      responses:
+        "200":
+          description: Login successful
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  token: { type: string }
+                  user: { $ref: "#/components/schemas/User" }
+
+  /auth:
+    get:
+      summary: Get all users
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of users
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
+
+  /auth/{id}:
+    delete:
+      summary: Delete a user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: User deleted }
+
+  /testimonies:
+    get:
+      summary: Get all testimonies
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of testimonies
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/Testimony"
+    post:
+      summary: Create a testimony
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Testimony"
+      responses:
+        "201": { description: Testimony created }
+
+  /testimonies/{id}:
+    delete:
+      summary: Delete a testimony
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Testimony deleted }
+
+  /testimonies/{userid}:
+    get:
+      summary: Get testimonies by user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userid
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "200": { description: List of testimonies by user }
+
+  /prayer-requests/allPrayers:
+    get:
+      summary: Get all prayer requests
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of prayer requests
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/PrayerRequest"
+
+  /prayer-requests/prayerReq:
+    post:
+      summary: Add prayer request
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/PrayerRequest"
+      responses:
+        "201": { description: Prayer request created }
+
+  /prayer-requests/{userid}:
+    get:
+      summary: Get prayer requests by user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: userid
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: List of prayer requests }
+
+  /prayer-requests/{userid}/{prayerid}:
+    delete:
+      summary: Delete prayer request
+      security:
+        - bearerAuth: []
+      parameters:
+        - { name: userid, in: path, required: true, schema: { type: string } }
+        - { name: prayerid, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: Deleted successfully }
+
+  /plans:
+    get:
+      summary: Get all plans
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: List of plans
+    post:
+      summary: Create new plan
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Plan"
+      responses:
+        "201": { description: Plan created }
+
+  /plans/{id}:
+    put:
+      summary: Update plan
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Plan updated }
+    delete:
+      summary: Delete plan
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200": { description: Plan deleted }
+
+  /devotions:
+    get:
+      summary: Get all devotions
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: List of devotions }
+    post:
+      summary: Create a devotion
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Devotion"
+      responses:
+        "201": { description: Devotion created }
+
+  /devotions/{id}:
+    put:
+      summary: Update devotion
+      security:
+        - bearerAuth: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: Devotion updated }
+    delete:
+      summary: Delete devotion
+      security:
+        - bearerAuth: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: Devotion deleted }
+
+  /bibleverse:
+    get:
+      summary: Get all verses
+      security:
+        - bearerAuth: []
+      responses:
+        "200": { description: List of verses }
+    post:
+      summary: Add verse
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/Verse"
+      responses:
+        "201": { description: Verse added }
+
+  /bibleverse/{id}:
+    delete:
+      summary: Delete verse
+      security:
+        - bearerAuth: []
+      parameters:
+        - { name: id, in: path, required: true, schema: { type: string } }
+      responses:
+        "200": { description: Verse deleted }
+
+  /saved:
+    post:
+      summary: Save an item
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/SavedItem"
+      responses:
+        "201": { description: Saved item added }
+
+  /saved/{userid}:
+    get:
+      summary: Get saved items for user
+      security:
+        - bearerAuth: []
+      parameters:
+        - { name: userid, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200": { description: List of saved items }
+
+  /saved/{item_type}/{userid}/{item_id}:
+    get:
+      summary: Get saved item by type + id
+      security:
+        - bearerAuth: []
+      parameters:
+        - { name: item_type, in: path, required: true, schema: { type: string } }
+        - { name: userid, in: path, required: true, schema: { type: integer } }
+        - { name: item_id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200": { description: Saved item }
+    delete:
+      summary: Delete saved item
+      security:
+        - bearerAuth: []
+      parameters:
+        - { name: item_type, in: path, required: true, schema: { type: string } }
+        - { name: userid, in: path, required: true, schema: { type: integer } }
+        - { name: item_id, in: path, required: true, schema: { type: integer } }
+      responses:
+        "200": { description: Saved item deleted }
