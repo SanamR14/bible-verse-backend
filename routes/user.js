@@ -7,6 +7,8 @@ const {
   registerUser,
   deleteUser,
   loginUser,
+  refreshToken,
+  logoutUser,
   // verifyEmail,
 } = require("../controllers/userController");
 
