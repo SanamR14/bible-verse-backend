@@ -13,6 +13,19 @@ exports.getUsers = async (req, res) => {
   }
 };
 
+exports.getUserById = async (req, res) => {
+  try {
+    const result = await pool.query("SELECT * FROM users WHERE id=$1", [id]);
+    if (result.rows.length === 0) {
+      return res.status(200).json([]);
+    }
+
+    res.status(200).json(result.rows);
+  } catch (err) {
+    res.status(500).json({ error: "Internal server error" });
+  }
+};
+
 exports.registerUser = async (req, res) => {
   const { name, email, password, confirm_password, city, country } = req.body;
   if (password !== confirm_password) {

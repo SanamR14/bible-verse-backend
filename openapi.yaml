@@ -172,6 +172,24 @@ paths:
                   $ref: "#/components/schemas/User"
 
   /auth/{id}:
+    get:
+      summary: Get prayer requests by user
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema: { type: string }
+      responses:
+        "200":
+          description: user details
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/User"
     delete:
       summary: Delete a user
       security:
