@@ -18,13 +18,13 @@ exports.createQuiz = async (req, res) => {
 // Add question to quiz
 exports.addQuestion = async (req, res) => {
   try {
-    const { quizId } = req.params;
+    const { quiz_id } = req.params;
     const { question_text, options, correct_answer } = req.body;
 
     const result = await pool.query(
       `INSERT INTO questions (quiz_id, question_text, options, correct_answer) 
        VALUES ($1, $2, $3, $4) RETURNING *`,
-      [quizId, question_text, options, correct_answer]
+      [quiz_id, question_text, options, correct_answer]
     );
 
     res.status(201).json(result.rows[0]);
@@ -37,13 +37,13 @@ exports.addQuestion = async (req, res) => {
 // Create quiz session (just generates a session code)
 exports.createSession = async (req, res) => {
   try {
-    const { quizId } = req.params;
+    const { quiz_id } = req.params;
     const sessionCode = Math.random()
       .toString(36)
       .substring(2, 8)
       .toUpperCase();
 
-    res.status(201).json({ quizId: Number(quizId), sessionCode });
+    res.status(201).json({ quiz_id: Number(quiz_id), sessionCode });
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to create session" });
@@ -51,11 +51,11 @@ exports.createSession = async (req, res) => {
 };
 
 exports.getQuestions = async (req, res) => {
-  const { quizId } = req.params;
+  const { quiz_id } = req.params;
   try {
     const result = await pool.query(
       "SELECT * FROM questions WHERE quiz_id=$1",
-      [quizId]
+      [quiz_id]
     );
     res.status(200).json(result.rows);
   } catch (err) {
