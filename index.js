@@ -11,7 +11,9 @@ const port = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
+// Swagger
 const swaggerDocument = YAML.load(path.join(__dirname, "openapi.yaml"));
+
 // Routes
 const plansRoute = require("./routes/plans");
 const verseRoute = require("./routes/verse");
@@ -34,6 +36,7 @@ app.use("/saved", savedRoutes);
 app.use("/testimonies", testimonyRoutes);
 app.use("/quiz", quizRoutes);
 
+// Socket setup
 const http = require("http");
 const { Server } = require("socket.io");
 const quizSocket = require("./sockets/quizSocket");
@@ -41,12 +44,14 @@ const quizSocket = require("./sockets/quizSocket");
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-quizSocket(io);
+quizSocket(io); // <-- mount socket events
 
+// Start server
 server.listen(port, () => {
   console.log(`Server running at ${port}`);
 });
 
+// Default route
 app.get("/", (req, res) => {
   res.send("API is running 🚀 - Visit /docs for API documentation");
 });

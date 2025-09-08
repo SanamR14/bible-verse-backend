@@ -4,6 +4,7 @@ function quizSocket(io) {
   io.on("connection", (socket) => {
     console.log("Player connected:", socket.id);
 
+    // Player joins a quiz session
     socket.on("join_session", async ({ sessionCode, playerName }) => {
       socket.join(sessionCode);
 
@@ -16,10 +17,12 @@ function quizSocket(io) {
       io.to(sessionCode).emit("player_joined", player);
     });
 
+    // Host starts a new question
     socket.on("start_question", ({ sessionCode, question }) => {
       io.to(sessionCode).emit("new_question", question);
     });
 
+    // Player submits an answer
     socket.on(
       "submit_answer",
       async ({ sessionCode, playerId, questionId, selectedOption }) => {
@@ -30,6 +33,7 @@ function quizSocket(io) {
         const correctAnswer = qRes.rows[0].correct_answer;
 
         const isCorrect = correctAnswer === selectedOption;
+
         if (isCorrect) {
           await pool.query(
             "UPDATE players SET score = score + 10 WHERE id=$1",
@@ -46,6 +50,7 @@ function quizSocket(io) {
       }
     );
 
+    // Get leaderboard
     socket.on("get_leaderboard", async ({ sessionCode }) => {
       const res = await pool.query(
         "SELECT id, name, score FROM players WHERE session_code=$1 ORDER BY score DESC",
