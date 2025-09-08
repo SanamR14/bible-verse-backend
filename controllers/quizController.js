@@ -49,3 +49,17 @@ exports.createSession = async (req, res) => {
     res.status(500).json({ error: "Failed to create session" });
   }
 };
+
+export const getQuestions = async (req, res) => {
+  const { quizId } = req.params;
+  try {
+    const result = await pool.query(
+      "SELECT * FROM questions WHERE quiz_id=$1",
+      [quizId]
+    );
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch questions" });
+  }
+};
