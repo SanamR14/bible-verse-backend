@@ -50,7 +50,7 @@ exports.createSession = async (req, res) => {
   }
 };
 
-export const getQuestions = async (req, res) => {
+exports.getQuestions = async (req, res) => {
   const { quizId } = req.params;
   try {
     const result = await pool.query(
