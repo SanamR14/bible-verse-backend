@@ -2,8 +2,9 @@ const pool = require("../db");
 
 function quizSocket(io) {
   io.on("connection", (socket) => {
-    console.log("🔌 Player connected:", socket.id);
+    console.log("Player connected:", socket.id);
 
+    // Join session
     socket.on("join_session", async ({ sessionCode, playerName }) => {
       try {
         socket.join(sessionCode);
@@ -16,16 +17,16 @@ function quizSocket(io) {
 
         io.to(sessionCode).emit("player_joined", player);
       } catch (err) {
-        console.error("❌ join_session error:", err);
-        socket.emit("quiz_error", "Failed to join session");
+        console.error("join_session error:", err.message);
       }
     });
 
+    // Host starts question
     socket.on("start_question", ({ sessionCode, question }) => {
-      console.log("➡️ Starting question for session:", sessionCode);
-      io.to(sessionCode).emit("new_question", question);
+      io.to(sessionCode).emit("question_started", question);
     });
 
+    // Player submits answer
     socket.on(
       "submit_answer",
       async ({ sessionCode, playerId, questionId, selectedOption }) => {
@@ -50,13 +51,25 @@ function quizSocket(io) {
             [playerId, questionId, selectedOption, isCorrect]
           );
 
-          io.to(sessionCode).emit("player_answered", { playerId, isCorrect });
+          // Notify player result
+          io.to(sessionCode).emit("question_result", {
+            playerId,
+            correct: isCorrect,
+          });
+
+          // 🔥 Auto-broadcast updated leaderboard
+          const res = await pool.query(
+            "SELECT id, name, score FROM players WHERE session_code=$1 ORDER BY score DESC",
+            [sessionCode]
+          );
+          io.to(sessionCode).emit("leaderboard", res.rows);
         } catch (err) {
-          console.error("❌ submit_answer error:", err);
+          console.error("submit_answer error:", err.message);
         }
       }
     );
 
+    // Manual leaderboard request (still works if needed)
     socket.on("get_leaderboard", async ({ sessionCode }) => {
       try {
         const res = await pool.query(
@@ -65,17 +78,17 @@ function quizSocket(io) {
         );
         io.to(sessionCode).emit("leaderboard", res.rows);
       } catch (err) {
-        console.error("❌ get_leaderboard error:", err);
+        console.error("get_leaderboard error:", err.message);
       }
     });
 
+    // End quiz
     socket.on("end_quiz", ({ sessionCode }) => {
-      console.log("🏁 Ending quiz for session:", sessionCode);
       io.to(sessionCode).emit("quiz_ended");
     });
 
     socket.on("disconnect", () => {
-      console.log("🔌 Player disconnected:", socket.id);
+      console.log("Player disconnected:", socket.id);
     });
   });
 }
