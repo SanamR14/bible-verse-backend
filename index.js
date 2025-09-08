@@ -34,11 +34,6 @@ app.use("/saved", savedRoutes);
 app.use("/testimonies", testimonyRoutes);
 app.use("/quiz", quizRoutes);
 
-// Protected route
-// app.get('/api/protected', authMiddleware, (req, res) => {
-//   res.send(`Hello user with ID: ${req.user.userId}`);
-// });
-
 const http = require("http");
 const { Server } = require("socket.io");
 const quizSocket = require("./sockets/quizSocket");
