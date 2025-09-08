@@ -21,6 +21,7 @@ const prayerRequestRoute = require("./routes/prayer");
 const devotions = require("./routes/devotions");
 const savedRoutes = require("./routes/saved");
 const testimonyRoutes = require("./routes/testimony");
+const quizRoutes = require("./routes/quiz");
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/home", homeRoute);
@@ -31,13 +32,23 @@ app.use("/prayer-requests", prayerRequestRoute);
 app.use("/devotions", devotions);
 app.use("/saved", savedRoutes);
 app.use("/testimonies", testimonyRoutes);
+app.use("/quiz", quizRoutes);
 
 // Protected route
 // app.get('/api/protected', authMiddleware, (req, res) => {
 //   res.send(`Hello user with ID: ${req.user.userId}`);
 // });
 
-app.listen(port, () => {
+const http = require("http");
+const { Server } = require("socket.io");
+const quizSocket = require("./sockets/quizSocket");
+
+const server = http.createServer(app);
+const io = new Server(server, { cors: { origin: "*" } });
+
+quizSocket(io);
+
+server.listen(port, () => {
   console.log(`Server running at ${port}`);
 });
 

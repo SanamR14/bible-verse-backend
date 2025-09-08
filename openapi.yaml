@@ -84,6 +84,33 @@ components:
         message: { type: string }
         author: { type: string }
 
+    Quiz:
+      type: object
+      properties:
+        id: { type: integer }
+        title: { type: string }
+        created_at: { type: string, format: date-time }
+
+    Question:
+      type: object
+      properties:
+        id: { type: integer }
+        quiz_id: { type: integer }
+        question_text: { type: string }
+        options:
+          type: array
+          items: { type: string }
+        correct_answer: 
+          type: integer
+          description: Index of the correct option (0-based)
+
+    Session:
+      type: object
+      properties:
+        quizId: { type: integer }
+        sessionCode: { type: string }
+
+
 security:
   - bearerAuth: []
 
@@ -505,3 +532,76 @@ paths:
         - { name: item_id, in: path, required: true, schema: { type: string } }
       responses:
         "200": { description: Saved item deleted }
+
+  /quiz:
+    post:
+      summary: Create a new quiz
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [title]
+              properties:
+                title: { type: string }
+      responses:
+        "201":
+          description: Quiz created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Quiz"
+
+  /quiz/{quizId}/questions:
+    post:
+      summary: Add a question to a quiz
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: quizId
+          in: path
+          required: true
+          schema: { type: integer }
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required: [question_text, options, correct_answer]
+              properties:
+                question_text: { type: string }
+                options:
+                  type: array
+                  items: { type: string }
+                correct_answer: 
+                  type: integer
+                  description: Index of the correct option (0-based)
+      responses:
+        "201":
+          description: Question added
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Question"
+
+  /quiz/{quizId}/session:
+    post:
+      summary: Create a new quiz session
+      security:
+        - bearerAuth: []
+      parameters:
+        - name: quizId
+          in: path
+          required: true
+          schema: { type: integer }
+      responses:
+        "201":
+          description: Quiz session created
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/Session"
