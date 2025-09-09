@@ -8,13 +8,11 @@ function quizSocket(io) {
     socket.on("join_session", async ({ sessionCode, playerName }) => {
       try {
         socket.join(sessionCode);
-
         const result = await pool.query(
           "INSERT INTO players (name, session_code) VALUES ($1, $2) RETURNING *",
           [playerName, sessionCode]
         );
         const player = result.rows[0];
-
         io.to(sessionCode).emit("player_joined", player);
       } catch (err) {
         console.error("join_session error:", err.message);
@@ -23,6 +21,7 @@ function quizSocket(io) {
 
     // Host starts question
     socket.on("start_question", ({ sessionCode, question }) => {
+      console.log("Sending question to session:", sessionCode);
       io.to(sessionCode).emit("question_started", question);
     });
 
@@ -36,7 +35,6 @@ function quizSocket(io) {
             [questionId]
           );
           const correctAnswer = qRes.rows[0].correct_answer;
-
           const isCorrect = correctAnswer === selectedOption;
 
           if (isCorrect) {
@@ -51,13 +49,11 @@ function quizSocket(io) {
             [playerId, questionId, selectedOption, isCorrect]
           );
 
-          // Notify player result
           io.to(sessionCode).emit("question_result", {
             playerId,
             correct: isCorrect,
           });
 
-          // 🔥 Auto-broadcast updated leaderboard
           const res = await pool.query(
             "SELECT id, name, score FROM players WHERE session_code=$1 ORDER BY score DESC",
             [sessionCode]
@@ -69,7 +65,6 @@ function quizSocket(io) {
       }
     );
 
-    // Manual leaderboard request (still works if needed)
     socket.on("get_leaderboard", async ({ sessionCode }) => {
       try {
         const res = await pool.query(
@@ -82,7 +77,6 @@ function quizSocket(io) {
       }
     });
 
-    // End quiz
     socket.on("end_quiz", ({ sessionCode }) => {
       io.to(sessionCode).emit("quiz_ended");
     });
