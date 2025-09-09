@@ -7,21 +7,39 @@ function quizSocket(io) {
     // Join session
     socket.on("join_session", async ({ sessionCode, playerName }) => {
       try {
-        socket.join(sessionCode);
+        console.log(
+          `[join_session] socket=${socket.id} session=${sessionCode} name=${playerName}`
+        );
+
+        // insert player into DB
         const result = await pool.query(
           "INSERT INTO players (name, session_code) VALUES ($1, $2) RETURNING *",
           [playerName, sessionCode]
         );
         const player = result.rows[0];
-        io.to(sessionCode).emit("player_joined", player);
+
+        // send confirmation back only to the joining socket
+        socket.emit("joined", player);
+
+        // notify everyone else in the session room
+        socket.broadcast.to(sessionCode).emit("player_joined", player);
+
+        // join the socket to the room so it also receives future room broadcasts
+        socket.join(sessionCode);
+
+        console.log(
+          `[join_session] player id=${player.id} inserted and joined room`
+        );
       } catch (err) {
-        console.error("join_session error:", err.message);
+        console.error("join_session error:", err);
+        socket.emit("quiz_error", "Failed to join session");
       }
     });
-
     // Host starts question
     socket.on("start_question", ({ sessionCode, question }) => {
-      console.log("Sending question to session:", sessionCode);
+      console.log(
+        `[start_question] from socket=${socket.id} session=${sessionCode} qid=${question.id}`
+      );
       io.to(sessionCode).emit("question_started", question);
     });
 
