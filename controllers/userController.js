@@ -121,7 +121,7 @@ exports.refreshToken = async (req, res) => {
       { expiresIn: "30s" }
     );
 
-    res.json({ accessToken: newAccessToken });
+    res.json({ refreshToken: newAccessToken });
   } catch (err) {
     return res.status(403).json({ error: "Invalid or expired refresh token" });
   }
