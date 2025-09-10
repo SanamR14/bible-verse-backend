@@ -111,6 +111,7 @@ exports.refreshToken = async (req, res) => {
     const result = await pool.query('SELECT * FROM "users" WHERE id=$1', [
       decoded.userId,
     ]);
+    console.log(result.rows[0]);
     if (!result.rows[0] || result.rows[0].refresh_token !== token) {
       return res.status(403).json({ error: "Invalid refresh token" });
     }
