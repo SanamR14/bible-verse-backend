@@ -66,7 +66,6 @@ exports.getSavedItemid = async (req, res) => {
       return res.status(404).json({ error: "Item not found" });
     }
     res.json(result.rows);
-    console.log(result);
   } catch (err) {
     console.error("Error fetching item:", err);
     res.status(500).json({ error: "Server error" });

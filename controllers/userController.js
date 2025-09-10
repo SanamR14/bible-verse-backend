@@ -83,13 +83,13 @@ exports.loginUser = async (req, res) => {
     const token = jwt.sign(
       { userId: user.id, email: user.email },
       process.env.JWT_SECRET,
-      { expiresIn: "30s" }
+      { expiresIn: "30m" }
     );
 
     const refreshToken = jwt.sign(
       { userId: user.id, email: user.email },
       process.env.JWT_REFRESH_SECRET,
-      { expiresIn: "7d" }
+      { expiresIn: "30d" }
     );
 
     await pool.query('UPDATE "users" SET refresh_token=$1 WHERE id=$2', [
@@ -116,7 +116,6 @@ exports.refreshToken = async (req, res) => {
     const result = await pool.query('SELECT * FROM "users" WHERE id=$1', [
       decoded.userId,
     ]);
-    console.log(result.rows[0]);
     if (!result.rows[0] || result.rows[0].refresh_token !== token) {
       return res.status(403).json({ error: "Invalid refresh token" });
     }
@@ -124,7 +123,7 @@ exports.refreshToken = async (req, res) => {
     const newAccessToken = jwt.sign(
       { userId: decoded.userId, email: decoded.email },
       process.env.JWT_SECRET,
-      { expiresIn: "30s" }
+      { expiresIn: "30m" }
     );
 
     res.json({ token: newAccessToken });
