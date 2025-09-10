@@ -92,6 +92,11 @@ exports.loginUser = async (req, res) => {
       { expiresIn: "7d" }
     );
 
+    await pool.query('UPDATE "users" SET refresh_token=$1 WHERE id=$2', [
+      refreshToken,
+      user.id,
+    ]);
+
     res
       .status(200)
       .json({ message: "Login successful", token, refreshToken, user });
@@ -122,7 +127,7 @@ exports.refreshToken = async (req, res) => {
       { expiresIn: "30s" }
     );
 
-    res.json({ refreshToken: newAccessToken });
+    res.json({ token: newAccessToken });
   } catch (err) {
     return res.status(403).json({ error: "Invalid or expired refresh token" });
   }
