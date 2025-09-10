@@ -21,6 +21,7 @@ components:
         email: { type: string }
         city: { type: string }
         country: { type: string }
+        refres_token: { type: string }
 
     AuthResponse:
       type: object
