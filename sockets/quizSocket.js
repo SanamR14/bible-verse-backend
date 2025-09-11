@@ -7,7 +7,6 @@ function quizSocket(io) {
 
     socket.on("join_session", async ({ sessionCode, playerName }) => {
       try {
-        // Skip host saving as a player
         if (playerName === "HOST") {
           socket.join(sessionCode);
           const qrData = await QRCode.toDataURL(sessionCode);
@@ -34,7 +33,6 @@ function quizSocket(io) {
 
     const activeQuestions = new Map();
 
-    // Start question
     socket.on("start_question", async ({ sessionCode, question, isLast }) => {
       const playersRes = await pool.query(
         "SELECT COUNT(*) FROM players WHERE session_code=$1",
@@ -52,7 +50,6 @@ function quizSocket(io) {
       io.to(sessionCode).emit("question_started", { question, duration: 30 });
     });
 
-    // Listen for answer submissions
     socket.on(
       "submit_answer",
       async ({ sessionCode, playerId, questionId, selectedOption }) => {
@@ -92,7 +89,6 @@ function quizSocket(io) {
 
           answered.add(playerId);
 
-          // Broadcast updated leaderboard
           const res = await pool.query(
             "SELECT id,name,score FROM players WHERE session_code=$1 ORDER BY score DESC",
             [sessionCode]
@@ -102,12 +98,10 @@ function quizSocket(io) {
             res.rows.filter((p) => p.name !== "HOST")
           );
 
-          // ✅ If all players have answered, move on automatically
           if (answered.size === totalPlayers) {
             if (isLast) {
               io.to(sessionCode).emit("show_final_leaderboard");
             } else {
-              // start next question
               io.to(sessionCode).emit("ready_for_next_question");
             }
           }
@@ -116,14 +110,15 @@ function quizSocket(io) {
         }
       }
     );
-  });
 
-  socket.on("end_quiz", ({ sessionCode }) => {
-    io.to(sessionCode).emit("quiz_ended");
-  });
+    // ✅ These listeners must also be INSIDE the connection block
+    socket.on("end_quiz", ({ sessionCode }) => {
+      io.to(sessionCode).emit("quiz_ended");
+    });
 
-  socket.on("disconnect", () => {
-    console.log("Player disconnected:", socket.id);
+    socket.on("disconnect", () => {
+      console.log("Player disconnected:", socket.id);
+    });
   });
 }
 
