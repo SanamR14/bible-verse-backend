@@ -32,82 +32,98 @@ function quizSocket(io) {
       }
     });
 
+    const activeQuestions = new Map();
+
     // Start question
     socket.on("start_question", async ({ sessionCode, question, isLast }) => {
-      let remaining = 30;
-      const startTime = Date.now();
+      const playersRes = await pool.query(
+        "SELECT COUNT(*) FROM players WHERE session_code=$1",
+        [sessionCode]
+      );
+      const totalPlayers = parseInt(playersRes.rows[0].count);
+
+      activeQuestions.set(sessionCode, {
+        startTime: Date.now(),
+        answered: new Set(),
+        totalPlayers,
+        isLast,
+      });
+
       io.to(sessionCode).emit("question_started", { question, duration: 30 });
+    });
 
-      const timer = setInterval(async () => {
-        remaining--;
-        io.to(sessionCode).emit("timer_update", { remaining });
+    // Listen for answer submissions
+    socket.on(
+      "submit_answer",
+      async ({ sessionCode, playerId, questionId, selectedOption }) => {
+        try {
+          const session = activeQuestions.get(sessionCode);
+          if (!session) return;
 
-        if (remaining <= 0) {
-          clearInterval(timer);
+          const { startTime, answered, totalPlayers, isLast } = session;
 
+          const qRes = await pool.query(
+            "SELECT correct_answer FROM questions WHERE id=$1",
+            [questionId]
+          );
+          const correctAnswer = qRes.rows[0].correct_answer;
+
+          const elapsed = (Date.now() - startTime) / 1000;
+          let points = 0;
+
+          if (selectedOption === correctAnswer) {
+            const speedFactor = Math.max(0, (30 - elapsed) / 30);
+            points = Math.floor(500 + 500 * speedFactor);
+            await pool.query(
+              "UPDATE players SET score = score + $1 WHERE id=$2",
+              [points, playerId]
+            );
+          }
+
+          await pool.query(
+            "INSERT INTO answers (player_id, question_id, selected_option, is_correct) VALUES ($1,$2,$3,$4)",
+            [
+              playerId,
+              questionId,
+              selectedOption,
+              selectedOption === correctAnswer,
+            ]
+          );
+
+          answered.add(playerId);
+
+          // Broadcast updated leaderboard
           const res = await pool.query(
-            "SELECT id, name, score FROM players WHERE session_code=$1 ORDER BY score DESC",
+            "SELECT id,name,score FROM players WHERE session_code=$1 ORDER BY score DESC",
             [sessionCode]
           );
-          io.to(sessionCode).emit("leaderboard", res.rows);
+          io.to(sessionCode).emit(
+            "leaderboard",
+            res.rows.filter((p) => p.name !== "HOST")
+          );
 
-          if (isLast) io.to(sessionCode).emit("show_final_leaderboard");
-        }
-      }, 1000);
-
-      // Listen for answer submissions
-      socket.on(
-        "submit_answer",
-        async ({ sessionCode, playerId, questionId, selectedOption }) => {
-          try {
-            const qRes = await pool.query(
-              "SELECT correct_answer FROM questions WHERE id=$1",
-              [questionId]
-            );
-            const correctAnswer = qRes.rows[0].correct_answer;
-
-            const elapsed = (Date.now() - startTime) / 1000; // seconds
-            let points = 0;
-
-            if (selectedOption === correctAnswer) {
-              // Calculate dynamic points (max 1000, min 500)
-              const speedFactor = Math.max(0, (30 - elapsed) / 30);
-              points = Math.floor(500 + 500 * speedFactor);
-              await pool.query(
-                "UPDATE players SET score = score + $1 WHERE id=$2",
-                [points, playerId]
-              );
+          // ✅ If all players have answered, move on automatically
+          if (answered.size === totalPlayers) {
+            if (isLast) {
+              io.to(sessionCode).emit("show_final_leaderboard");
+            } else {
+              // start next question
+              io.to(sessionCode).emit("ready_for_next_question");
             }
-
-            await pool.query(
-              "INSERT INTO answers (player_id, question_id, selected_option, is_correct) VALUES ($1,$2,$3,$4)",
-              [
-                playerId,
-                questionId,
-                selectedOption,
-                selectedOption === correctAnswer,
-              ]
-            );
-
-            const res = await pool.query(
-              "SELECT id,name,score FROM players WHERE session_code=$1 ORDER BY score DESC",
-              [sessionCode]
-            );
-            io.to(sessionCode).emit("leaderboard", res.rows);
-          } catch (err) {
-            console.error("submit_answer error:", err.message);
           }
+        } catch (err) {
+          console.error("submit_answer error:", err.message);
         }
-      );
-    });
+      }
+    );
+  });
 
-    socket.on("end_quiz", ({ sessionCode }) => {
-      io.to(sessionCode).emit("quiz_ended");
-    });
+  socket.on("end_quiz", ({ sessionCode }) => {
+    io.to(sessionCode).emit("quiz_ended");
+  });
 
-    socket.on("disconnect", () => {
-      console.log("Player disconnected:", socket.id);
-    });
+  socket.on("disconnect", () => {
+    console.log("Player disconnected:", socket.id);
   });
 }
 
