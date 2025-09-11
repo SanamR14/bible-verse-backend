@@ -1,11 +1,11 @@
 const pool = require("../db");
-const QRCode = require("qrcode"); // npm install qrcode
+const QRCode = require("qrcode");
 
 function quizSocket(io) {
   io.on("connection", (socket) => {
     console.log("Player connected:", socket.id);
 
-    // Join session
+    // Player joins session
     socket.on("join_session", async ({ sessionCode, playerName }) => {
       try {
         const result = await pool.query(
@@ -13,11 +13,12 @@ function quizSocket(io) {
           [playerName, sessionCode]
         );
         const player = result.rows[0];
+
         socket.emit("joined", player);
         socket.broadcast.to(sessionCode).emit("player_joined", player);
         socket.join(sessionCode);
 
-        // Generate QR code for session
+        // Send QR to all players (host already got it from REST)
         const qrData = await QRCode.toDataURL(sessionCode);
         io.to(sessionCode).emit("session_qr", { code: sessionCode, qrData });
       } catch (err) {
@@ -26,7 +27,7 @@ function quizSocket(io) {
       }
     });
 
-    // Start a question with a 30-second timer
+    // Host starts question with countdown
     socket.on("start_question", async ({ sessionCode, question, isLast }) => {
       io.to(sessionCode).emit("question_started", { question, duration: 30 });
 
@@ -37,8 +38,6 @@ function quizSocket(io) {
 
         if (remaining <= 0) {
           clearInterval(timer);
-
-          // Send leaderboard after question ends
           const res = await pool.query(
             "SELECT id, name, score FROM players WHERE session_code=$1 ORDER BY score DESC",
             [sessionCode]
@@ -46,14 +45,13 @@ function quizSocket(io) {
           io.to(sessionCode).emit("leaderboard", res.rows);
 
           if (isLast) {
-            // Auto-navigate host to leaderboard
             io.to(sessionCode).emit("show_final_leaderboard");
           }
         }
       }, 1000);
     });
 
-    // Player submits answer
+    // Handle answer submission
     socket.on(
       "submit_answer",
       async ({ sessionCode, playerId, questionId, selectedOption }) => {
@@ -93,7 +91,15 @@ function quizSocket(io) {
       }
     );
 
-    // Close quiz for everyone
+    // Send leaderboard on request
+    socket.on("get_leaderboard", async ({ sessionCode }) => {
+      const res = await pool.query(
+        "SELECT id, name, score FROM players WHERE session_code=$1 ORDER BY score DESC",
+        [sessionCode]
+      );
+      io.to(sessionCode).emit("leaderboard", res.rows);
+    });
+
     socket.on("end_quiz", ({ sessionCode }) => {
       io.to(sessionCode).emit("quiz_ended");
     });
