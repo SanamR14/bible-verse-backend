@@ -143,3 +143,32 @@ exports.logoutUser = async (req, res) => {
     res.status(500).json({ error: "Logout failed" });
   }
 };
+
+exports.updateUserPrivacy = async (req, res) => {
+  const { id } = req.params; // user ID from URL
+  const { is_private } = req.body; // true or false from request body
+
+  if (typeof is_private !== "boolean") {
+    return res.status(400).json({ error: "is_private must be true or false" });
+  }
+
+  try {
+    const result = await pool.query(
+      'UPDATE "users" SET is_private = $1 WHERE id = $2 RETURNING id, name, email, is_private',
+      [is_private, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "Privacy updated successfully",
+      user: result.rows[0],
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update privacy setting" });
+  }
+};
+
