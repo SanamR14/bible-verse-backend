@@ -111,7 +111,7 @@ function quizSocket(io) {
       }
     );
 
-    // ✅ These listeners must also be INSIDE the connection block
+    // These listeners must also be INSIDE the connection block
     socket.on("end_quiz", ({ sessionCode }) => {
       io.to(sessionCode).emit("quiz_ended");
     });
