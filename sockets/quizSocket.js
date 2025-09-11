@@ -56,12 +56,13 @@ function quizSocket(io) {
       "submit_answer",
       async ({ sessionCode, playerId, questionId, selectedOption }) => {
         try {
+          // Fetch correct_answer (integer) from DB
           const qRes = await pool.query(
             "SELECT correct_answer FROM questions WHERE id=$1",
             [questionId]
           );
-          const correctAnswer = qRes.rows[0].correct_answer;
-          const isCorrect = correctAnswer === selectedOption;
+          const correctAnswer = qRes.rows[0].correct_answer; // already an integer
+          const isCorrect = parseInt(selectedOption) === correctAnswer; // ✅ compare integers
 
           if (isCorrect) {
             await pool.query(
