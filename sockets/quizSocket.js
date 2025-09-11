@@ -35,7 +35,7 @@ function quizSocket(io) {
 
     socket.on("start_question", async ({ sessionCode, question, isLast }) => {
       const playersRes = await pool.query(
-        "SELECT COUNT(*) FROM players WHERE session_code=$1",
+        "SELECT COUNT(*) FROM players WHERE session_code=$1 AND name != 'HOST'",
         [sessionCode]
       );
       const totalPlayers = parseInt(playersRes.rows[0].count);
@@ -59,24 +59,26 @@ function quizSocket(io) {
 
           const { startTime, answered, totalPlayers, isLast } = session;
 
+          // Fetch correct answer
           const qRes = await pool.query(
             "SELECT correct_answer FROM questions WHERE id=$1",
             [questionId]
           );
           const correctAnswer = qRes.rows[0].correct_answer;
 
+          // Points based on speed
           const elapsed = (Date.now() - startTime) / 1000;
           let points = 0;
-
           if (selectedOption === correctAnswer) {
             const speedFactor = Math.max(0, (30 - elapsed) / 30);
             points = Math.floor(500 + 500 * speedFactor);
-            await pool.query(
-              "UPDATE players SET score = score + $1 WHERE id=$2",
-              [points, playerId]
-            );
+            await pool.query("UPDATE players SET score=score+$1 WHERE id=$2", [
+              points,
+              playerId,
+            ]);
           }
 
+          // Save answer
           await pool.query(
             "INSERT INTO answers (player_id, question_id, selected_option, is_correct) VALUES ($1,$2,$3,$4)",
             [
@@ -87,8 +89,10 @@ function quizSocket(io) {
             ]
           );
 
+          // Mark this player as answered
           answered.add(playerId);
 
+          // Send updated leaderboard
           const res = await pool.query(
             "SELECT id,name,score FROM players WHERE session_code=$1 ORDER BY score DESC",
             [sessionCode]
@@ -98,7 +102,8 @@ function quizSocket(io) {
             res.rows.filter((p) => p.name !== "HOST")
           );
 
-          if (answered.size === totalPlayers) {
+          // ✅ Advance once all non-HOST players answered
+          if (answered.size >= totalPlayers) {
             if (isLast) {
               io.to(sessionCode).emit("show_final_leaderboard");
             } else {
