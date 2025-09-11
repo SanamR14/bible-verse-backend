@@ -24,7 +24,7 @@ router.post("/signup", registerUser);
 router.post("/login", loginUser);
 router.post("/refresh", refreshToken);
 router.post("/logout", logoutUser);
-router.put("/users/:id/privacy", updateUserPrivacy);
+router.put("/:id/privacy", updateUserPrivacy);
 // router.get("/verify-email", verifyEmail);
 
 module.exports = router;

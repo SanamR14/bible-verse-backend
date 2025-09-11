@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 exports.getUsers = async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, name, email, city, country FROM "users"'
+      'SELECT id, name, email, city, country, is_private FROM "users"'
     );
     res.status(200).json(result.rows);
   } catch (err) {
@@ -171,4 +171,3 @@ exports.updateUserPrivacy = async (req, res) => {
     res.status(500).json({ error: "Failed to update privacy setting" });
   }
 };
-
