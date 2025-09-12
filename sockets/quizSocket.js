@@ -8,9 +8,10 @@ function quizSocket(io) {
     socket.on("join_session", async ({ sessionCode, playerName }) => {
       try {
         const result = await pool.query(
-          "INSERT INTO players (name, session_code) VALUES ($1, $2) RETURNING *",
+          "INSERT INTO players (name, session_code, score) VALUES ($1, $2, 0) RETURNING *",
           [playerName, sessionCode]
         );
+
         const player = result.rows[0];
         socket.emit("joined", player);
         socket.broadcast.to(sessionCode).emit("player_joined", player);
