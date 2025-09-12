@@ -1,122 +1,90 @@
 const pool = require("../db");
-const QRCode = require("qrcode");
-
 function quizSocket(io) {
   io.on("connection", (socket) => {
     console.log("Player connected:", socket.id);
-
+    // Join session
     socket.on("join_session", async ({ sessionCode, playerName }) => {
       try {
-        if (playerName === "HOST") {
-          socket.join(sessionCode);
-          const qrData = await QRCode.toDataURL(sessionCode);
-          io.to(sessionCode).emit("session_qr", { code: sessionCode, qrData });
-          return;
-        }
-
+        console.log(
+          `[join_session] socket=${socket.id} session=${sessionCode} name=${playerName}`
+        );
+        // insert player into DB
         const result = await pool.query(
-          "INSERT INTO players (name, session_code, score) VALUES ($1, $2, 0) RETURNING *",
+          "INSERT INTO players (name, session_code) VALUES ($1, $2) RETURNING *",
           [playerName, sessionCode]
         );
         const player = result.rows[0];
+        // send confirmation back only to the joining socket
         socket.emit("joined", player);
+        // notify everyone else in the session room
         socket.broadcast.to(sessionCode).emit("player_joined", player);
+        // join the socket to the room so it also receives future room broadcasts
         socket.join(sessionCode);
-
-        const qrData = await QRCode.toDataURL(sessionCode);
-        io.to(sessionCode).emit("session_qr", { code: sessionCode, qrData });
+        console.log(
+          `[join_session] player id=${player.id} inserted and joined room`
+        );
       } catch (err) {
         console.error("join_session error:", err);
         socket.emit("quiz_error", "Failed to join session");
       }
     });
 
-    const activeQuestions = new Map();
-
-    socket.on("start_question", async ({ sessionCode, question, isLast }) => {
-      const playersRes = await pool.query(
-        "SELECT COUNT(*) FROM players WHERE session_code=$1 AND name != 'HOST'",
-        [sessionCode]
+    // Host starts question
+    socket.on("start_question", ({ sessionCode, question }) => {
+      console.log(
+        `[start_question] from socket=${socket.id} session=${sessionCode} qid=${question.id}`
       );
-      const totalPlayers = parseInt(playersRes.rows[0].count);
-
-      activeQuestions.set(sessionCode, {
-        startTime: Date.now(),
-        answered: new Set(),
-        totalPlayers,
-        isLast,
-      });
-
-      io.to(sessionCode).emit("question_started", { question, duration: 30 });
+      io.to(sessionCode).emit("question_started", question);
     });
 
+    // Player submits answer
     socket.on(
       "submit_answer",
       async ({ sessionCode, playerId, questionId, selectedOption }) => {
         try {
-          const session = activeQuestions.get(sessionCode);
-          if (!session) return;
-
-          const { startTime, answered, totalPlayers, isLast } = session;
-
-          // Fetch correct answer
           const qRes = await pool.query(
             "SELECT correct_answer FROM questions WHERE id=$1",
             [questionId]
           );
           const correctAnswer = qRes.rows[0].correct_answer;
-
-          // Points based on speed
-          const elapsed = (Date.now() - startTime) / 1000;
-          let points = 0;
-          if (selectedOption === correctAnswer) {
-            const speedFactor = Math.max(0, (30 - elapsed) / 30);
-            points = Math.floor(500 + 500 * speedFactor);
-            await pool.query("UPDATE players SET score=score+$1 WHERE id=$2", [
-              points,
-              playerId,
-            ]);
+          const isCorrect = correctAnswer === selectedOption;
+          if (isCorrect) {
+            await pool.query(
+              "UPDATE players SET score = score + 10 WHERE id=$1",
+              [playerId]
+            );
           }
-
-          // Save answer
           await pool.query(
-            "INSERT INTO answers (player_id, question_id, selected_option, is_correct) VALUES ($1,$2,$3,$4)",
-            [
-              playerId,
-              questionId,
-              selectedOption,
-              selectedOption === correctAnswer,
-            ]
+            "INSERT INTO answers (player_id, question_id, selected_option, is_correct) VALUES ($1, $2, $3, $4)",
+            [playerId, questionId, selectedOption, isCorrect]
           );
-
-          // Mark this player as answered
-          answered.add(playerId);
-
-          // Send updated leaderboard
+          io.to(sessionCode).emit("question_result", {
+            playerId,
+            correct: isCorrect,
+          });
           const res = await pool.query(
-            "SELECT id,name,score FROM players WHERE session_code=$1 ORDER BY score DESC",
+            "SELECT id, name, score FROM players WHERE session_code=$1 ORDER BY score DESC",
             [sessionCode]
           );
-          io.to(sessionCode).emit(
-            "leaderboard",
-            res.rows.filter((p) => p.name !== "HOST")
-          );
-
-          // ✅ Advance once all non-HOST players answered
-          if (answered.size >= totalPlayers) {
-            if (isLast) {
-              io.to(sessionCode).emit("show_final_leaderboard");
-            } else {
-              io.to(sessionCode).emit("ready_for_next_question");
-            }
-          }
+          io.to(sessionCode).emit("leaderboard", res.rows);
         } catch (err) {
           console.error("submit_answer error:", err.message);
         }
       }
     );
 
-    // These listeners must also be INSIDE the connection block
+    socket.on("get_leaderboard", async ({ sessionCode }) => {
+      try {
+        const res = await pool.query(
+          "SELECT id, name, score FROM players WHERE session_code=$1 ORDER BY score DESC",
+          [sessionCode]
+        );
+        io.to(sessionCode).emit("leaderboard", res.rows);
+      } catch (err) {
+        console.error("get_leaderboard error:", err.message);
+      }
+    });
+
     socket.on("end_quiz", ({ sessionCode }) => {
       io.to(sessionCode).emit("quiz_ended");
     });
