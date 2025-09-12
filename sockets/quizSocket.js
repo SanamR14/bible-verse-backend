@@ -79,7 +79,10 @@ function quizSocket(io) {
           "SELECT id, name, score FROM players WHERE session_code=$1 ORDER BY score DESC",
           [sessionCode]
         );
-        io.to(sessionCode).emit("leaderboard", res.rows);
+        io.to(sessionCode).emit(
+          "leaderboard",
+          res.rows.filter((p) => p.name !== "HOST")
+        );
       } catch (err) {
         console.error("get_leaderboard error:", err.message);
       }
