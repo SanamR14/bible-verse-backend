@@ -31,7 +31,8 @@ exports.getUserById = async (req, res) => {
 };
 
 exports.registerUser = async (req, res) => {
-  const { name, email, password, confirm_password, city, country } = req.body;
+  const { name, email, password, confirm_password, city, country, church } = req.body;
+  
   if (password !== confirm_password) {
     return res.status(400).json({ error: "Passwords do not match" });
   }
@@ -46,8 +47,8 @@ exports.registerUser = async (req, res) => {
     const hashedPassword = await bcrypt.hash(password, 10);
     const confirmHashedPassword = await bcrypt.hash(confirm_password, 10);
     const result = await pool.query(
-      'INSERT INTO "users" (name, email, password, confirm_password, city, country) VALUES ($1, $2, $3, $4, $5, $6) RETURNING id, name, email',
-      [name, email, hashedPassword, confirmHashedPassword, city, country]
+      'INSERT INTO "users" (name, email, password, confirm_password, city, country, church) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, name, email, church',
+      [name, email, hashedPassword, confirmHashedPassword, city, country, church || null]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
