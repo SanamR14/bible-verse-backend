@@ -5,7 +5,7 @@ const jwt = require("jsonwebtoken");
 exports.getUsers = async (req, res) => {
   try {
     const result = await pool.query(
-      'SELECT id, name, email, city, country, is_private FROM "users"'
+      'SELECT id, name, email, city, country, is_private, church, is_church_admin FROM "users"'
     );
     res.status(200).json(result.rows);
   } catch (err) {
@@ -17,7 +17,7 @@ exports.getUserById = async (req, res) => {
   const { id } = req.params;
   try {
     const result = await pool.query(
-      'SELECT id, name, email, city, country FROM "users" WHERE id = $1',
+      'SELECT id, name, email, city, country, is_private, church, is_church_admin FROM "users" WHERE id = $1',
       [id]
     );
     if (result.rows.length === 0) {
@@ -31,8 +31,9 @@ exports.getUserById = async (req, res) => {
 };
 
 exports.registerUser = async (req, res) => {
-  const { name, email, password, confirm_password, city, country, church } = req.body;
-  
+  const { name, email, password, confirm_password, city, country, church } =
+    req.body;
+
   if (password !== confirm_password) {
     return res.status(400).json({ error: "Passwords do not match" });
   }
@@ -48,7 +49,15 @@ exports.registerUser = async (req, res) => {
     const confirmHashedPassword = await bcrypt.hash(confirm_password, 10);
     const result = await pool.query(
       'INSERT INTO "users" (name, email, password, confirm_password, city, country, church) VALUES ($1, $2, $3, $4, $5, $6, $7) RETURNING id, name, email, church',
-      [name, email, hashedPassword, confirmHashedPassword, city, country, church || null]
+      [
+        name,
+        email,
+        hashedPassword,
+        confirmHashedPassword,
+        city,
+        country,
+        church || null,
+      ]
     );
     res.status(201).json(result.rows[0]);
   } catch (err) {
