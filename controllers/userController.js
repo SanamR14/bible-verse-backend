@@ -155,8 +155,8 @@ exports.logoutUser = async (req, res) => {
 };
 
 exports.updateUserPrivacy = async (req, res) => {
-  const { id } = req.params; // user ID from URL
-  const { is_private } = req.body; // true or false from request body
+  const { id } = req.params;
+  const { is_private } = req.body;
 
   if (typeof is_private !== "boolean") {
     return res.status(400).json({ error: "is_private must be true or false" });
@@ -179,5 +179,35 @@ exports.updateUserPrivacy = async (req, res) => {
   } catch (err) {
     console.error(err);
     res.status(500).json({ error: "Failed to update privacy setting" });
+  }
+};
+
+exports.updateChurchAdmin = async (req, res) => {
+  const { id } = req.params;
+  const { is_church_admin } = req.body;
+
+  if (typeof is_church_admin !== "boolean") {
+    return res
+      .status(400)
+      .json({ error: "is_church_admin must be true or false" });
+  }
+
+  try {
+    const result = await pool.query(
+      'UPDATE "users" SET is_church_admin = $1 WHERE id = $2 RETURNING id, name, email, is_church_admin, church',
+      [is_church_admin, id]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ error: "User not found" });
+    }
+
+    res.status(200).json({
+      message: "is_church_admin updated successfully",
+      user: result.rows[0],
+    });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to update admin setting" });
   }
 };

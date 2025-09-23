@@ -11,6 +11,7 @@ const {
   refreshToken,
   logoutUser,
   updateUserPrivacy,
+  updateChurchAdmin,
   // verifyEmail,
 } = require("../controllers/userController");
 
@@ -25,6 +26,7 @@ router.post("/login", loginUser);
 router.post("/refresh", refreshToken);
 router.post("/logout", logoutUser);
 router.put("/:id/privacy", updateUserPrivacy);
+router.put("/:id/updatechurchadmin", updateChurchAdmin);
 // router.get("/verify-email", verifyEmail);
 
 module.exports = router;
