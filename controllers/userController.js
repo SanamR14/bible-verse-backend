@@ -223,18 +223,18 @@ exports.getUsersByChurch = async (req, res) => {
 
   try {
     // Trim and normalize
-    church = church.trim();
-    city = city.trim();
-    country = country.trim();
+    church = church.trim().toLowerCase();
+    city = city.trim().toLowerCase();
+    country = country.trim().toLowerCase();
 
     console.log("Searching for:", { church, city, country });
 
     const result = await pool.query(
       `SELECT id, name, email, city, country, is_private, church, is_church_admin 
        FROM "users" 
-       WHERE TRIM(LOWER(church)) = TRIM(LOWER($1)) 
-         AND TRIM(LOWER(city)) = TRIM(LOWER($2)) 
-         AND TRIM(LOWER(country)) = TRIM(LOWER($3))`,
+       WHERE TRIM(LOWER(COALESCE(church, ''))) = $1
+         AND TRIM(LOWER(COALESCE(city, ''))) = $2
+         AND TRIM(LOWER(COALESCE(country, ''))) = $3`,
       [church, city, country]
     );
 
@@ -252,3 +252,4 @@ exports.getUsersByChurch = async (req, res) => {
       .json({ error: "Failed to fetch users", details: err.message });
   }
 };
+
