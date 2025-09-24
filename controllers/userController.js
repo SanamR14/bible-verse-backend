@@ -213,7 +213,7 @@ exports.updateChurchAdmin = async (req, res) => {
 };
 
 exports.getUsersByChurch = async (req, res) => {
-  let { church, city } = req.query;
+  let { church, city, country } = req.query;
 
   if (!church || !city) {
     return res.status(400).json({
@@ -225,15 +225,17 @@ exports.getUsersByChurch = async (req, res) => {
     // Trim and normalize
     church = church.trim().toLowerCase();
     city = city.trim().toLowerCase();
+    country = country.trim().toLowerCase();
 
-    console.log("Searching for:", { church, city });
+    console.log("Searching for:", { church, city, country });
 
     const result = await pool.query(
       `SELECT id, name, email, city, country, is_private, church, is_church_admin 
        FROM "users" 
        WHERE TRIM(LOWER(COALESCE(church, ''))) = $1
-         AND TRIM(LOWER(COALESCE(city, ''))) = $2`,
-      [church, city]
+         AND TRIM(LOWER(COALESCE(city, ''))) = $2
+          AND TRIM(LOWER(COALESCE(country, ''))) = $3`,
+      [church, city, country]
     );
 
     if (result.rows.length === 0) {
