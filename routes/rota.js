@@ -12,7 +12,7 @@ const {
 const authMiddleware = require("../middleware/auth");
 
 router.get("/:date", authMiddleware, getRotaByDate);
-router.post("/", authMiddleware, createRota);
+router.post("/rota", authMiddleware, createRota);
 router.put("/update/:id", authMiddleware, updateRota);
 router.delete("/:id", authMiddleware, deleteRota);
 router.get("/monthrota", authMiddleware, getRotaByMonth);
