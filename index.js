@@ -24,6 +24,8 @@ const devotions = require("./routes/devotions");
 const savedRoutes = require("./routes/saved");
 const testimonyRoutes = require("./routes/testimony");
 const quizRoutes = require("./routes/quiz");
+const eventsRoutes = require("./routes/events");
+const rotaRoutes = require("./routes/rota");
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/home", homeRoute);
@@ -35,6 +37,8 @@ app.use("/devotions", devotions);
 app.use("/saved", savedRoutes);
 app.use("/testimonies", testimonyRoutes);
 app.use("/quiz", quizRoutes);
+app.use("/churchevent", eventsRoutes);
+app.use("/churchrota", rotaRoutes);
 
 // Socket setup
 const http = require("http");
