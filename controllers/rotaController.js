@@ -1,23 +1,5 @@
 const pool = require("../db");
 
-exports.createRota = async (req, res) => {
-  const { date, member_id, duty } = req.body; // member_id must be UUID
-  const { userId } = req.user; // admin’s UUID
-
-  try {
-    const result = await pool.query(
-      `INSERT INTO rota (date, member_id, duty, created_by) 
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [date, member_id, duty, userId]
-    );
-
-    res.status(201).json(result.rows[0]);
-  } catch (err) {
-    console.error("Error creating rota:", err);
-    res.status(500).json({ error: "Failed to create rota" });
-  }
-};
-
 exports.getRotaByDate = async (req, res) => {
   const { date } = req.params;
 
@@ -35,6 +17,24 @@ exports.getRotaByDate = async (req, res) => {
   } catch (err) {
     console.error("Error fetching rota:", err);
     res.status(500).json({ error: "Failed to fetch rota" });
+  }
+};
+
+exports.createRota = async (req, res) => {
+  const { date, member_id, duty } = req.body; // member_id must be UUID
+  const { userId } = req.user; // admin’s UUID
+
+  try {
+    const result = await pool.query(
+      `INSERT INTO rota (date, member_id, duty, created_by) 
+       VALUES ($1, $2, $3, $4) RETURNING *`,
+      [date, member_id, duty, userId]
+    );
+
+    res.status(201).json(result.rows[0]);
+  } catch (err) {
+    console.error("Error creating rota:", err);
+    res.status(500).json({ error: "Failed to create rota" });
   }
 };
 
