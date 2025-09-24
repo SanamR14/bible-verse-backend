@@ -213,11 +213,11 @@ exports.updateChurchAdmin = async (req, res) => {
 };
 
 exports.getUsersByChurch = async (req, res) => {
-  let { church, city, country } = req.query;
+  let { church, city } = req.query;
 
-  if (!church || !city || !country) {
+  if (!church || !city ) {
     return res.status(400).json({
-      error: "Please provide church, city, and country query parameters",
+      error: "Please provide church, city query parameters",
     });
   }
 
@@ -225,7 +225,6 @@ exports.getUsersByChurch = async (req, res) => {
     // Trim and normalize
     church = church.trim().toLowerCase();
     city = city.trim().toLowerCase();
-    country = country.trim().toLowerCase();
 
     console.log("Searching for:", { church, city, country });
 
@@ -233,9 +232,8 @@ exports.getUsersByChurch = async (req, res) => {
       `SELECT id, name, email, city, country, is_private, church, is_church_admin 
        FROM "users" 
        WHERE TRIM(LOWER(COALESCE(church, ''))) = $1
-         AND TRIM(LOWER(COALESCE(city, ''))) = $2
-         AND TRIM(LOWER(COALESCE(country, ''))) = $3`,
-      [church, city, country]
+         AND TRIM(LOWER(COALESCE(city, ''))) = $2`,
+      [church, city]
     );
 
     if (result.rows.length === 0) {
