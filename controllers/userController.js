@@ -215,7 +215,7 @@ exports.updateChurchAdmin = async (req, res) => {
 exports.getUsersByChurch = async (req, res) => {
   let { church, city } = req.query;
 
-  if (!church || !city ) {
+  if (!church || !city) {
     return res.status(400).json({
       error: "Please provide church, city query parameters",
     });
@@ -226,7 +226,7 @@ exports.getUsersByChurch = async (req, res) => {
     church = church.trim().toLowerCase();
     city = city.trim().toLowerCase();
 
-    console.log("Searching for:", { church, city, country });
+    console.log("Searching for:", { church, city });
 
     const result = await pool.query(
       `SELECT id, name, email, city, country, is_private, church, is_church_admin 
@@ -250,4 +250,3 @@ exports.getUsersByChurch = async (req, res) => {
       .json({ error: "Failed to fetch users", details: err.message });
   }
 };
-
