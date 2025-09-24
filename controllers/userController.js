@@ -212,9 +212,8 @@ exports.updateChurchAdmin = async (req, res) => {
   }
 };
 
-// Get users by church, city, and country
 exports.getUsersByChurch = async (req, res) => {
-  const { church, city, country } = req.query;
+  let { church, city, country } = req.query;
 
   if (!church || !city || !country) {
     return res.status(400).json({
@@ -223,12 +222,19 @@ exports.getUsersByChurch = async (req, res) => {
   }
 
   try {
+    // Trim and normalize
+    church = church.trim();
+    city = city.trim();
+    country = country.trim();
+
+    console.log("Searching for:", { church, city, country });
+
     const result = await pool.query(
       `SELECT id, name, email, city, country, is_private, church, is_church_admin 
        FROM "users" 
-       WHERE LOWER(church) = LOWER($1) 
-         AND LOWER(city) = LOWER($2) 
-         AND LOWER(country) = LOWER($3)`,
+       WHERE TRIM(LOWER(church)) = TRIM(LOWER($1)) 
+         AND TRIM(LOWER(city)) = TRIM(LOWER($2)) 
+         AND TRIM(LOWER(country)) = TRIM(LOWER($3))`,
       [church, city, country]
     );
 
@@ -240,7 +246,9 @@ exports.getUsersByChurch = async (req, res) => {
 
     res.status(200).json(result.rows);
   } catch (err) {
-    console.error(err);
-    res.status(500).json({ error: "Failed to fetch users" });
+    console.error("Database error:", err);
+    res
+      .status(500)
+      .json({ error: "Failed to fetch users", details: err.message });
   }
 };
