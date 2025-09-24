@@ -12,6 +12,7 @@ const {
   logoutUser,
   updateUserPrivacy,
   updateChurchAdmin,
+  getUsersByChurch,
   // verifyEmail,
 } = require("../controllers/userController");
 
@@ -20,6 +21,7 @@ const authMiddleware = require("../middleware/auth");
 router.get("/", authMiddleware, getUsers);
 router.get("/:id", authMiddleware, getUserById);
 router.delete("/:id", authMiddleware, deleteUser);
+router.get("/churchfilter", getUsersByChurch);
 
 router.post("/signup", registerUser);
 router.post("/login", loginUser);

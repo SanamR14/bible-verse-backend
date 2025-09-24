@@ -211,3 +211,36 @@ exports.updateChurchAdmin = async (req, res) => {
     res.status(500).json({ error: "Failed to update admin setting" });
   }
 };
+
+// Get users by church, city, and country
+exports.getUsersByChurch = async (req, res) => {
+  const { church, city, country } = req.query;
+
+  if (!church || !city || !country) {
+    return res.status(400).json({
+      error: "Please provide church, city, and country query parameters",
+    });
+  }
+
+  try {
+    const result = await pool.query(
+      `SELECT id, name, email, city, country, is_private, church, is_church_admin 
+       FROM "users" 
+       WHERE LOWER(church) = LOWER($1) 
+         AND LOWER(city) = LOWER($2) 
+         AND LOWER(country) = LOWER($3)`,
+      [church, city, country]
+    );
+
+    if (result.rows.length === 0) {
+      return res
+        .status(404)
+        .json({ message: "No users found for the given filters" });
+    }
+
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to fetch users" });
+  }
+};
