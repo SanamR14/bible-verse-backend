@@ -95,9 +95,8 @@ exports.getRotaByMonth = async (req, res) => {
   }
 };
 
-
 exports.getRotaByMember = async (req, res) => {
-  const { memberId } = req.params; // memberId will be passed in the route
+  const { memberId } = req.params;
 
   try {
     const result = await pool.query(
@@ -105,7 +104,7 @@ exports.getRotaByMember = async (req, res) => {
        FROM rota r
        LEFT JOIN users u ON r.member_id = u.id
        WHERE r.member_id = $1
-       ORDER BY r.date ASC`,
+       ORDER BY r.rota_date ASC, r.rota_time ASC`,
       [memberId]
     );
 
