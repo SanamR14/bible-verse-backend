@@ -1,15 +1,14 @@
 const pool = require("../db");
 
-// ✅ Create new event
 exports.createEvent = async (req, res) => {
-  const { date, title, description } = req.body;
+  const { event_date, event_time, title, description } = req.body;
   const { userId } = req.user; // extracted from JWT (UUID)
 
   try {
     const result = await pool.query(
-      `INSERT INTO events (date, title, description, created_by) 
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [date, title, description, userId] // userId is UUID
+      `INSERT INTO events (event_date, event_time, title, description, created_by) 
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [event_date, event_time, title, description, userId]
     );
 
     res.status(201).json(result.rows[0]);
@@ -19,14 +18,14 @@ exports.createEvent = async (req, res) => {
   }
 };
 
-// ✅ Get all events
 exports.getEvents = async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT e.*, u.name AS created_by_name 
+      `SELECT e.id, e.event_date, e.event_time, e.title, e.description,
+              u.name AS created_by_name 
        FROM events e
        LEFT JOIN users u ON e.created_by = u.id
-       ORDER BY e.date ASC`
+       ORDER BY e.event_date ASC, e.event_time ASC`
     );
 
     res.status(200).json(result.rows);
@@ -36,17 +35,16 @@ exports.getEvents = async (req, res) => {
   }
 };
 
-// ✅ Update event
 exports.updateEvent = async (req, res) => {
   const { id } = req.params;
-  const { date, title, description } = req.body;
+  const { event_date, event_time, title, description } = req.body;
 
   try {
     const result = await pool.query(
       `UPDATE events 
-       SET date = $1, title = $2, description = $3 
-       WHERE id = $4 RETURNING *`,
-      [date, title, description, id]
+       SET event_date = $1, event_time = $2, title = $3, description = $4
+       WHERE id = $5 RETURNING *`,
+      [event_date, event_time, title, description, id]
     );
 
     if (result.rows.length === 0) {
@@ -60,7 +58,6 @@ exports.updateEvent = async (req, res) => {
   }
 };
 
-// ✅ Delete event
 exports.deleteEvent = async (req, res) => {
   const { id } = req.params;
 

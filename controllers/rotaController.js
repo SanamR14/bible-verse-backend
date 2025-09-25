@@ -8,8 +8,8 @@ exports.getRotaByDate = async (req, res) => {
       `SELECT r.*, u.name AS member_name 
        FROM rota r
        LEFT JOIN users u ON r.member_id = u.id
-       WHERE r.date = $1
-       ORDER BY r.id ASC`,
+       WHERE r.rota_date = $1
+       ORDER BY r.rota_time ASC`, // order by time in the day
       [date]
     );
 
@@ -21,14 +21,14 @@ exports.getRotaByDate = async (req, res) => {
 };
 
 exports.createRota = async (req, res) => {
-  const { date, member_id, duty } = req.body; // member_id must be UUID
-  const { userId } = req.user; // admin’s UUID
+  const { rota_date, rota_time, member_id, duty } = req.body;
+  const { userId } = req.user; // admin UUID
 
   try {
     const result = await pool.query(
-      `INSERT INTO rota (date, member_id, duty, created_by) 
-       VALUES ($1, $2, $3, $4) RETURNING *`,
-      [date, member_id, duty, userId]
+      `INSERT INTO rota (rota_date, rota_time, member_id, duty, created_by) 
+       VALUES ($1, $2, $3, $4, $5) RETURNING *`,
+      [rota_date, rota_time, member_id, duty, userId]
     );
 
     res.status(201).json(result.rows[0]);
@@ -40,14 +40,16 @@ exports.createRota = async (req, res) => {
 
 exports.updateRota = async (req, res) => {
   const { id } = req.params;
-  const { duty } = req.body;
+  const { duty, rota_date, rota_time } = req.body;
 
   try {
     const result = await pool.query(
       `UPDATE rota 
-       SET duty = $1 
-       WHERE id = $2 RETURNING *`,
-      [duty, id]
+       SET duty = COALESCE($1, duty),
+           rota_date = COALESCE($2, rota_date),
+           rota_time = COALESCE($3, rota_time)
+       WHERE id = $4 RETURNING *`,
+      [duty, rota_date, rota_time, id]
     );
 
     if (result.rows.length === 0) {
@@ -74,15 +76,15 @@ exports.deleteRota = async (req, res) => {
 };
 
 exports.getRotaByMonth = async (req, res) => {
-  const { month } = req.query; // e.g. "2025-09"
+  const { month } = req.query; // "2025-09"
 
   try {
     const result = await pool.query(
       `SELECT r.*, u.name AS member_name
        FROM rota r
        LEFT JOIN users u ON r.member_id = u.id
-       WHERE TO_CHAR(r.date, 'YYYY-MM') = $1
-       ORDER BY r.date ASC`,
+       WHERE TO_CHAR(r.rota_date, 'YYYY-MM') = $1
+       ORDER BY r.rota_date ASC, r.rota_time ASC`,
       [month]
     );
 
@@ -92,6 +94,7 @@ exports.getRotaByMonth = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch rota" });
   }
 };
+
 
 exports.getRotaByMember = async (req, res) => {
   const { memberId } = req.params; // memberId will be passed in the route
