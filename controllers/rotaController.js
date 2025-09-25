@@ -92,3 +92,27 @@ exports.getRotaByMonth = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch rota" });
   }
 };
+
+exports.getRotaByMember = async (req, res) => {
+  const { memberId } = req.params; // memberId will be passed in the route
+
+  try {
+    const result = await pool.query(
+      `SELECT r.*, u.name AS member_name
+       FROM rota r
+       LEFT JOIN users u ON r.member_id = u.id
+       WHERE r.member_id = $1
+       ORDER BY r.date ASC`,
+      [memberId]
+    );
+
+    if (result.rows.length === 0) {
+      return res.status(404).json({ message: "No rota found for this member" });
+    }
+
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("Error fetching rota by member:", err);
+    res.status(500).json({ error: "Failed to fetch rota" });
+  }
+};
