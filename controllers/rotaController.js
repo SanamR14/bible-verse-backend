@@ -77,15 +77,17 @@ exports.deleteRota = async (req, res) => {
 
 exports.getRotaByMonth = async (req, res) => {
   const { month } = req.query; // "2025-09"
+
   try {
     const result = await pool.query(
       `SELECT r.*, u.name AS member_name
        FROM rota r
        LEFT JOIN users u ON r.member_id = u.id
-       WHERE DATE_TRUNC('month', r.rota_date) = DATE_TRUNC('month', $1::date)
+       WHERE TO_CHAR(r.rota_date, 'YYYY-MM') = $1
        ORDER BY r.rota_date ASC, r.rota_time ASC`,
-      [month + "-01"] // cast to full date
+      [month]
     );
+
     res.status(200).json(result.rows);
   } catch (err) {
     console.error("Error fetching rota by month:", err.message);
