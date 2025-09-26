@@ -19,6 +19,5 @@ router.put("/update/:id", authMiddleware, updateRota);
 router.delete("/:id", authMiddleware, deleteRota);
 router.get("/monthrota/:month", authMiddleware, getRotaByMonth);
 router.get("/member/:memberId", authMiddleware, getRotaByMember);
-router.get("/all", authMiddleware, getAllRotas);
 
 module.exports = router;
