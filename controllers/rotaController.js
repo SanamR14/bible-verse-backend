@@ -119,7 +119,7 @@ exports.getRotaByMember = async (req, res) => {
   }
 };
 
-exports.getAllRota = async (req, res) => {
+exports.getAllRotas = async (req, res) => {
   const { is_church_admin, church, userId } = req.user;
 
   try {
