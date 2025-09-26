@@ -122,10 +122,8 @@ exports.getRotaByMember = async (req, res) => {
 exports.getAllRotas = async (req, res) => {
   try {
     const result = await pool.query(
-      `SELECT r.*, u.name AS member_name
-       FROM rota r
-       LEFT JOIN users u ON r.member_id = u.id
-       ORDER BY r.rota_date ASC, r.rota_time ASC`
+      `SELECT * FROM rota
+       ORDER BY rota_date ASC, rota_time ASC`
     );
 
     res.status(200).json(result.rows);
