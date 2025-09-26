@@ -2,7 +2,7 @@ const pool = require("../db");
 
 exports.createEvent = async (req, res) => {
   const { event_date, event_time, title, description } = req.body;
-  const { userId } = req.user; // extracted from JWT (UUID)
+  const { userId } = req.user;
 
   try {
     const result = await pool.query(
@@ -31,6 +31,46 @@ exports.getEvents = async (req, res) => {
     res.status(200).json(result.rows);
   } catch (err) {
     console.error("Error fetching events:", err);
+    res.status(500).json({ error: "Failed to fetch events" });
+  }
+};
+
+exports.getEventsByDate = async (req, res) => {
+  const { date } = req.params;
+
+  try {
+    const result = await pool.query(
+      `SELECT e.*, u.name AS created_by_name
+       FROM events e
+       LEFT JOIN users u ON e.created_by = u.id
+       WHERE e.event_date = $1
+       ORDER BY e.event_time ASC`,
+      [date]
+    );
+
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("Error fetching events by date:", err);
+    res.status(500).json({ error: "Failed to fetch events" });
+  }
+};
+
+exports.getEventsByMonth = async (req, res) => {
+  const { month } = req.query; // e.g., "2025-09"
+
+  try {
+    const result = await pool.query(
+      `SELECT e.*, u.name AS created_by_name
+       FROM events e
+       LEFT JOIN users u ON e.created_by = u.id
+       WHERE TO_CHAR(e.event_date, 'YYYY-MM') = $1
+       ORDER BY e.event_date ASC, e.event_time ASC`,
+      [month]
+    );
+
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("Error fetching events by month:", err.message);
     res.status(500).json({ error: "Failed to fetch events" });
   }
 };

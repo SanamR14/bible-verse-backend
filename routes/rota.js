@@ -8,6 +8,7 @@ const {
   deleteRota,
   getRotaByMonth,
   getRotaByMember,
+  getAllRotas,
 } = require("../controllers/rotaController");
 
 const authMiddleware = require("../middleware/auth");
@@ -18,5 +19,6 @@ router.put("/update/:id", authMiddleware, updateRota);
 router.delete("/:id", authMiddleware, deleteRota);
 router.get("/monthrota/:month", authMiddleware, getRotaByMonth);
 router.get("/member/:memberId", authMiddleware, getRotaByMember);
+router.get("/allrota", authMiddleware, getAllRotas);
 
 module.exports = router;
