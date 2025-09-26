@@ -2,8 +2,8 @@ const express = require("express");
 const router = express.Router();
 
 const {
-  getEvents,
   createEvent,
+  getEventsByChurch,
   getEventsByDate,
   getEventsByMonth,
   updateEvent,
@@ -12,7 +12,7 @@ const {
 
 const authMiddleware = require("../middleware/auth");
 
-router.get("/", authMiddleware, getEvents);
+router.get("/", authMiddleware, getEventsByChurch);
 router.post("/", authMiddleware, createEvent);
 router.get("/eventdate", authMiddleware, getEventsByDate);
 router.get("/eventmonth", authMiddleware, getEventsByMonth);
