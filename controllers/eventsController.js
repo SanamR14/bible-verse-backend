@@ -1,16 +1,16 @@
+// controllers/eventController.js
 const pool = require("../db");
 
+// Create event
 exports.createEvent = async (req, res) => {
   const { event_date, event_time, title, description } = req.body;
   const { userId } = req.user;
-
   try {
     const result = await pool.query(
       `INSERT INTO events (event_date, event_time, title, description, created_by) 
        VALUES ($1, $2, $3, $4, $5) RETURNING *`,
       [event_date, event_time, title, description, userId]
     );
-
     res.status(201).json(result.rows[0]);
   } catch (err) {
     console.error("Error creating event:", err);
@@ -18,26 +18,28 @@ exports.createEvent = async (req, res) => {
   }
 };
 
-exports.getEvents = async (req, res) => {
+// Get all events for a church
+exports.getEventsByChurch = async (req, res) => {
+  const { church } = req.params;
   try {
     const result = await pool.query(
-      `SELECT e.id, e.event_date, e.event_time, e.title, e.description,
-              u.name AS created_by_name 
+      `SELECT e.*, u.name AS created_by_name
        FROM events e
        LEFT JOIN users u ON e.created_by = u.id
-       ORDER BY e.event_date ASC, e.event_time ASC`
+       WHERE u.church = $1
+       ORDER BY e.event_date ASC, e.event_time ASC`,
+      [church]
     );
-
     res.status(200).json(result.rows);
   } catch (err) {
-    console.error("Error fetching events:", err);
+    console.error("Error fetching events by church:", err);
     res.status(500).json({ error: "Failed to fetch events" });
   }
 };
 
+// Get events by date
 exports.getEventsByDate = async (req, res) => {
   const { date } = req.params;
-
   try {
     const result = await pool.query(
       `SELECT e.*, u.name AS created_by_name
@@ -47,7 +49,6 @@ exports.getEventsByDate = async (req, res) => {
        ORDER BY e.event_time ASC`,
       [date]
     );
-
     res.status(200).json(result.rows);
   } catch (err) {
     console.error("Error fetching events by date:", err);
@@ -55,9 +56,9 @@ exports.getEventsByDate = async (req, res) => {
   }
 };
 
+// Get events by month
 exports.getEventsByMonth = async (req, res) => {
   const { month } = req.query; // e.g., "2025-09"
-
   try {
     const result = await pool.query(
       `SELECT e.*, u.name AS created_by_name
@@ -67,7 +68,6 @@ exports.getEventsByMonth = async (req, res) => {
        ORDER BY e.event_date ASC, e.event_time ASC`,
       [month]
     );
-
     res.status(200).json(result.rows);
   } catch (err) {
     console.error("Error fetching events by month:", err.message);
@@ -75,10 +75,10 @@ exports.getEventsByMonth = async (req, res) => {
   }
 };
 
+// Update event
 exports.updateEvent = async (req, res) => {
   const { id } = req.params;
   const { event_date, event_time, title, description } = req.body;
-
   try {
     const result = await pool.query(
       `UPDATE events 
@@ -86,11 +86,9 @@ exports.updateEvent = async (req, res) => {
        WHERE id = $5 RETURNING *`,
       [event_date, event_time, title, description, id]
     );
-
     if (result.rows.length === 0) {
       return res.status(404).json({ error: "Event not found" });
     }
-
     res.status(200).json(result.rows[0]);
   } catch (err) {
     console.error("Error updating event:", err);
@@ -98,11 +96,17 @@ exports.updateEvent = async (req, res) => {
   }
 };
 
+// Delete event
 exports.deleteEvent = async (req, res) => {
   const { id } = req.params;
-
   try {
-    await pool.query("DELETE FROM events WHERE id = $1", [id]);
+    const result = await pool.query(
+      "DELETE FROM events WHERE id = $1 RETURNING id",
+      [id]
+    );
+    if (result.rowCount === 0) {
+      return res.status(404).json({ error: "Event not found" });
+    }
     res.status(200).json({ message: "Event deleted" });
   } catch (err) {
     console.error("Error deleting event:", err);
