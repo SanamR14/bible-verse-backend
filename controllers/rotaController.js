@@ -118,3 +118,23 @@ exports.getRotaByMember = async (req, res) => {
     res.status(500).json({ error: "Failed to fetch rota" });
   }
 };
+
+exports.getAllRota = async (req, res) => {
+  const { church } = req.params;
+
+  try {
+    const result = await pool.query(
+      `SELECT r.*, u.name AS member_name
+       FROM rota r
+       LEFT JOIN users u ON r.member_id = u.id
+       WHERE u.church = $1
+       ORDER BY r.rota_date ASC, r.rota_time ASC`,
+      [church]
+    );
+
+    res.status(200).json(result.rows);
+  } catch (err) {
+    console.error("Error fetching all rota:", err);
+    res.status(500).json({ error: "Failed to fetch all rota" });
+  }
+};
