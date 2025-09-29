@@ -74,3 +74,19 @@ exports.getAllQuizzes = async (req, res) => {
   );
   res.json(result.rows);
 };
+
+// Get quizzes created by the logged-in user
+exports.getMyQuizzes = async (req, res) => {
+  try {
+    // userId is set by auth middleware
+    const userId = req.user.userId;
+    const result = await pool.query(
+      `SELECT * FROM quizzes WHERE created_by = $1 ORDER BY id DESC`,
+      [userId]
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error("Error fetching user quizzes:", err);
+    res.status(500).json({ error: "Failed to fetch quizzes" });
+  }
+};
