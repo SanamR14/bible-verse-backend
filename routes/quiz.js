@@ -12,8 +12,8 @@ router.get("/all", quizController.getAllQuizzes);
 router.delete("/delete/:quizId", quizController.deleteQuiz);
 router.get("/my", authMiddleware, quizController.getMyQuizzes);
 router.delete("/questions/:id", quizController.deleteQuestion);
-app.get("/public", quizController.getPublicQuizzes);
-app.post("/:quizId/score", quizController.submitScore);
-app.get("/:quizId/leaderboard", quizController.getLeaderboard);
+router.get("/public", quizController.getPublicQuizzes);
+router.post("/:quizId/score", quizController.submitScore);
+router.get("/:quizId/leaderboard", quizController.getLeaderboard);
 
 module.exports = router;
