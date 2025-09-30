@@ -126,7 +126,7 @@ exports.getPublicQuizzes = async (req, res) => {
 exports.submitScore = async (req, res) => {
   try {
     const { quizId } = req.params;
-    const { email, score } = req.body; // user must send email
+    const { email, score } = req.body; 
 
     await pool.query(
       `INSERT INTO quiz_scores (quiz_id, user_email, score)

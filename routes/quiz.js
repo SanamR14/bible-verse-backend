@@ -13,7 +13,7 @@ router.delete("/delete/:quizId", quizController.deleteQuiz);
 router.get("/my", authMiddleware, quizController.getMyQuizzes);
 router.delete("/questions/:id", quizController.deleteQuestion);
 router.get("/public", quizController.getPublicQuizzes);
-router.post("/:quizId/score", quizController.submitScore);
+router.post("/:quizId/score", authMiddleware, quizController.submitScore);
 router.get("/:quizId/leaderboard", quizController.getLeaderboard);
 
 module.exports = router;
