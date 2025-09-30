@@ -2,13 +2,24 @@ const pool = require("../db");
 
 // Create new quiz
 exports.createQuiz = async (req, res) => {
-  const { title } = req.body;
-  const { userId } = req.user;
-  const result = await pool.query(
-    `INSERT INTO quizzes (title, created_by) VALUES ($1, $2) RETURNING *`,
-    [title, userId]
-  );
-  res.json(result.rows[0]);
+  try {
+    const { title } = req.body;
+    const { userId, email } = req.user;
+
+    const isPublic = email && email.endsWith("@admin.fyi.com");
+
+    const result = await pool.query(
+      `INSERT INTO quizzes (title, created_by, is_public)
+       VALUES ($1, $2, $3)
+       RETURNING *`,
+      [title, userId, isPublic]
+    );
+
+    res.json(result.rows[0]);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to create quiz" });
+  }
 };
 
 // Add question to quiz
@@ -99,3 +110,53 @@ exports.deleteQuestion = async (req, res) => {
   await pool.query(`DELETE FROM questions WHERE id=$1`, [id]);
   res.json({ message: "Question deleted" });
 };
+
+exports.getPublicQuizzes = async (req, res) => {
+  try {
+    const result = await pool.query(
+      `SELECT id, title FROM quizzes WHERE is_public = true`
+    );
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: "Failed to load FYI quizzes" });
+  }
+};
+
+exports.submitScore = async (req, res) => {
+  try {
+    const { quizId } = req.params;
+    const { email, score } = req.body; // user must send email
+
+    await pool.query(
+      `INSERT INTO quiz_scores (quiz_id, user_email, score)
+       VALUES ($1, $2, $3)`,
+      [quizId, email, score]
+    );
+
+    res.json({ success: true });
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to submit score' });
+  }
+};
+
+exports.getLeaderboard = async (req, res) => {
+  try {
+    const { quizId } = req.params;
+
+    const result = await pool.query(
+      `SELECT user_email, score
+         FROM quiz_scores
+        WHERE quiz_id = $1
+     ORDER BY score DESC, created_at ASC`,
+      [quizId]
+    );
+
+    res.json(result.rows);
+  } catch (err) {
+    console.error(err);
+    res.status(500).json({ error: 'Failed to get leaderboard' });
+  }
+};
+
