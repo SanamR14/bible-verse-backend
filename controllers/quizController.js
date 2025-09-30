@@ -126,7 +126,8 @@ exports.getPublicQuizzes = async (req, res) => {
 exports.submitScore = async (req, res) => {
   try {
     const { quizId } = req.params;
-    const { email, score } = req.body; 
+    const { score } = req.body;
+    const { email } = req.user;
 
     await pool.query(
       `INSERT INTO quiz_scores (quiz_id, user_email, score)
@@ -137,7 +138,7 @@ exports.submitScore = async (req, res) => {
     res.json({ success: true });
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to submit score' });
+    res.status(500).json({ error: "Failed to submit score" });
   }
 };
 
@@ -156,7 +157,6 @@ exports.getLeaderboard = async (req, res) => {
     res.json(result.rows);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Failed to get leaderboard' });
+    res.status(500).json({ error: "Failed to get leaderboard" });
   }
 };
-
