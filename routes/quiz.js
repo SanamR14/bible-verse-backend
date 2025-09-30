@@ -11,5 +11,5 @@ router.get("/:quiz_id/questions", quizController.getQuestions);
 router.get("/all", quizController.getAllQuizzes);
 router.delete("/delete/:quizId", quizController.deleteQuiz);
 router.get("/my", authMiddleware, quizController.getMyQuizzes);
-
+router.delete("/questions/:id")
 module.exports = router;
