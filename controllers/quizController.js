@@ -40,7 +40,7 @@ exports.createSession = async (req, res) => {
       .toUpperCase();
     await pool.query(
       `INSERT INTO sessions (quiz_id, session_code) VALUES ($1,$2)`,
-      [quizId, sessionCode]
+      [quiz_id, sessionCode]
     );
     res.status(201).json({ quiz_id: Number(quiz_id), sessionCode });
   } catch (err) {
