@@ -4,7 +4,7 @@ const pool = require("../db");
 // const isAdmin = (email) => email?.endsWith("@admin.fyi.com");
 
 /** ✅ Get all folders */
-export const getAllFolders = async (req, res) => {
+exports.getAllFolders = async (req, res) => {
   try {
     const result = await pool.query("SELECT * FROM folders ORDER BY id DESC");
     res.json(result.rows);
@@ -15,7 +15,7 @@ export const getAllFolders = async (req, res) => {
 };
 
 /** ✅ Create a folder (Admin only) */
-export const createFolder = async (req, res) => {
+exports.createFolder = async (req, res) => {
   try {
     const { name, userEmail } = req.body;
     // if (!isAdmin(userEmail)) {
@@ -33,7 +33,7 @@ export const createFolder = async (req, res) => {
 };
 
 /** ✅ Get files in a folder */
-export const getFolderFiles = async (req, res) => {
+exports.getFolderFiles = async (req, res) => {
   const { folderId } = req.params;
   try {
     const result = await pool.query(
@@ -48,7 +48,7 @@ export const getFolderFiles = async (req, res) => {
 };
 
 /** ✅ Upload file (Admin only) */
-export const uploadFile = async (req, res) => {
+exports.uploadFile = async (req, res) => {
   const { folderId } = req.params;
   const { userEmail } = req.body;
 
