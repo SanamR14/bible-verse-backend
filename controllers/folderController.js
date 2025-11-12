@@ -1,4 +1,4 @@
-import pool from "../db.js";
+const pool = require("../db");
 
 /** Helper */
 // const isAdmin = (email) => email?.endsWith("@admin.fyi.com");
@@ -52,10 +52,10 @@ export const uploadFile = async (req, res) => {
   const { folderId } = req.params;
   const { userEmail } = req.body;
 
-//   if (!isAdmin(userEmail)) {
-//     if (req.file) fs.unlinkSync(req.file.path);
-//     return res.status(403).json({ error: "Not authorized" });
-//   }
+  //   if (!isAdmin(userEmail)) {
+  //     if (req.file) fs.unlinkSync(req.file.path);
+  //     return res.status(403).json({ error: "Not authorized" });
+  //   }
 
   try {
     const file = req.file;
