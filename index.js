@@ -8,13 +8,23 @@ require("dotenv").config();
 const app = express();
 const port = process.env.PORT || 3000;
 
+// Middleware
 app.use(cors());
 app.use(express.json());
 
-// Swagger
-const swaggerDocument = YAML.load(path.join(__dirname, "openapi.yaml"));
+// Serve uploaded files publicly (make sure uploads folder exists)
+app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 
-// Routes
+// Load Swagger safely
+let swaggerDocument;
+try {
+  swaggerDocument = YAML.load(path.join(__dirname, "openapi.yaml"));
+  app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+} catch (err) {
+  console.warn("⚠️ Swagger file not found. Skipping /docs setup.");
+}
+
+// Import Routes
 const plansRoute = require("./routes/plans");
 const verseRoute = require("./routes/verse");
 const userRoute = require("./routes/user");
@@ -28,7 +38,7 @@ const eventsRoutes = require("./routes/events");
 const rotaRoutes = require("./routes/rota");
 const folderRoutes = require("./routes/folders");
 
-app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+// Mount Routes
 app.use("/home", homeRoute);
 app.use("/bibleverse", verseRoute);
 app.use("/auth", userRoute);
@@ -40,10 +50,9 @@ app.use("/testimonies", testimonyRoutes);
 app.use("/quiz", quizRoutes);
 app.use("/churchevent", eventsRoutes);
 app.use("/churchrota", rotaRoutes);
-app.use(bodyParser.json());
-app.use("/uploads", express.static("uploads")); // serve files publicly
 app.use("/folders", folderRoutes);
-// Socket setup
+
+//  Socket setup
 const http = require("http");
 const { Server } = require("socket.io");
 const quizSocket = require("./sockets/quizSocket");
@@ -51,16 +60,16 @@ const quizSocket = require("./sockets/quizSocket");
 const server = http.createServer(app);
 const io = new Server(server, { cors: { origin: "*" } });
 
-quizSocket(io); // <-- mount socket events
+quizSocket(io);
+
+// Root route
+app.get("/", (req, res) => {
+  res.send("📖 API is running — Visit /docs for API documentation 🚀");
+});
 
 // Start server
 server.listen(port, () => {
-  console.log(`Server running at ${port}`);
-});
-
-// Default route
-app.get("/", (req, res) => {
-  res.send("API is running 🚀 - Visit /docs for API documentation");
+  console.log(`Server running at http://localhost:${port}`);
 });
 
 module.exports = app;
