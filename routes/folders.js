@@ -1,14 +1,14 @@
-import multer from "multer";
-import path from "path";
-import fs from "fs";
-import {
+const express = require("express");
+const multer = require("multer");
+const path = require("path");
+const fs = require("fs");
+const {
   getAllFolders,
   createFolder,
   getFolderFiles,
   uploadFile,
-} from "../controllers/folderController.js";
+} = require("../controllers/folderController");
 
-const express = require("express");
 const router = express.Router();
 
 // Ensure upload dir exists
