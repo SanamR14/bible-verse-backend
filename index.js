@@ -26,6 +26,7 @@ const testimonyRoutes = require("./routes/testimony");
 const quizRoutes = require("./routes/quiz");
 const eventsRoutes = require("./routes/events");
 const rotaRoutes = require("./routes/rota");
+const folderRoutes = require("./routes/folders");
 
 app.use("/docs", swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 app.use("/home", homeRoute);
@@ -39,7 +40,9 @@ app.use("/testimonies", testimonyRoutes);
 app.use("/quiz", quizRoutes);
 app.use("/churchevent", eventsRoutes);
 app.use("/churchrota", rotaRoutes);
-
+app.use(bodyParser.json());
+app.use("/uploads", express.static("uploads")); // serve files publicly
+app.use("/folders", folderRoutes);
 // Socket setup
 const http = require("http");
 const { Server } = require("socket.io");
