@@ -1,9 +1,7 @@
 import pool from "../db.js";
-import fs from "fs";
-import path from "path";
 
 /** Helper */
-const isAdmin = (email) => email?.endsWith("@admin.fyi.com");
+// const isAdmin = (email) => email?.endsWith("@admin.fyi.com");
 
 /** ✅ Get all folders */
 export const getAllFolders = async (req, res) => {
@@ -20,9 +18,9 @@ export const getAllFolders = async (req, res) => {
 export const createFolder = async (req, res) => {
   try {
     const { name, userEmail } = req.body;
-    if (!isAdmin(userEmail)) {
-      return res.status(403).json({ error: "Not authorized" });
-    }
+    // if (!isAdmin(userEmail)) {
+    //   return res.status(403).json({ error: "Not authorized" });
+    // }
     const result = await pool.query(
       "INSERT INTO folders (name, created_by) VALUES ($1, $2) RETURNING *",
       [name, userEmail]
@@ -54,10 +52,10 @@ export const uploadFile = async (req, res) => {
   const { folderId } = req.params;
   const { userEmail } = req.body;
 
-  if (!isAdmin(userEmail)) {
-    if (req.file) fs.unlinkSync(req.file.path);
-    return res.status(403).json({ error: "Not authorized" });
-  }
+//   if (!isAdmin(userEmail)) {
+//     if (req.file) fs.unlinkSync(req.file.path);
+//     return res.status(403).json({ error: "Not authorized" });
+//   }
 
   try {
     const file = req.file;

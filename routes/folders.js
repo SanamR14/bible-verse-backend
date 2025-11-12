@@ -1,4 +1,3 @@
-import express from "express";
 import multer from "multer";
 import path from "path";
 import fs from "fs";
@@ -9,6 +8,7 @@ import {
   uploadFile,
 } from "../controllers/folderController.js";
 
+const express = require("express");
 const router = express.Router();
 
 // Ensure upload dir exists
@@ -30,4 +30,4 @@ router.post("/", createFolder);
 router.get("/:folderId/files", getFolderFiles);
 router.post("/:folderId/upload", upload.single("file"), uploadFile);
 
-export default router;
+module.exports = router;
