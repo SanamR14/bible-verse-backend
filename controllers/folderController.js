@@ -81,3 +81,38 @@ exports.uploadFile = async (req, res) => {
     res.status(500).json({ error: "File upload failed" });
   }
 };
+
+/** ✅ Delete file */
+exports.deleteFile = async (req, res) => {
+  const { fileId } = req.params;
+
+  try {
+    // Get file info first
+    const fileResult = await pool.query(
+      "SELECT file_url FROM files WHERE id=$1",
+      [fileId]
+    );
+
+    if (fileResult.rows.length === 0) {
+      return res.status(404).json({ error: "File not found" });
+    }
+
+    const fileUrl = fileResult.rows[0].file_url;
+
+    // Extract local file path (remove domain part)
+    const localPath = fileUrl.replace(`${req.protocol}://${req.get("host")}/`, "");
+
+    // Delete DB entry
+    await pool.query("DELETE FROM files WHERE id=$1", [fileId]);
+
+    // Remove local file safely
+    fs.unlink(localPath, (err) => {
+      if (err) console.log("File not found on disk:", localPath);
+    });
+
+    res.json({ success: true, message: "File deleted" });
+  } catch (err) {
+    console.error("deleteFile:", err);
+    res.status(500).json({ error: "Failed to delete file" });
+  }
+};

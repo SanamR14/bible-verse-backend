@@ -7,6 +7,7 @@ const {
   createFolder,
   getFolderFiles,
   uploadFile,
+  deleteFile,
 } = require("../controllers/folderController");
 
 const router = express.Router();
@@ -29,5 +30,7 @@ router.get("/", getAllFolders);
 router.post("/", createFolder);
 router.get("/:folderId/files", getFolderFiles);
 router.post("/:folderId/upload", upload.single("file"), uploadFile);
+router.delete("/files/:fileId", deleteFile);
+
 
 module.exports = router;
