@@ -17,13 +17,13 @@ exports.getAllFolders = async (req, res) => {
 /** ✅ Create a folder (Admin only) */
 exports.createFolder = async (req, res) => {
   try {
-    const { name, userEmail } = req.body;
+    const { name, userEmail, room_name, church } = req.body;
     // if (!isAdmin(userEmail)) {
     //   return res.status(403).json({ error: "Not authorized" });
     // }
     const result = await pool.query(
-      "INSERT INTO folders (name, created_by) VALUES ($1, $2) RETURNING *",
-      [name, userEmail]
+      "INSERT INTO folders (name, created_by, room_name, church) VALUES ($1, $2, $3, $4) RETURNING *",
+      [name, userEmail, room_name, church]
     );
     res.json(result.rows[0]);
   } catch (err) {
@@ -70,7 +70,6 @@ exports.deleteFolder = async (req, res) => {
   }
 };
 
-/** ✅ Upload file (Admin only) */
 exports.uploadFile = async (req, res) => {
   const { folderId } = req.params;
   const { userEmail } = req.body;
@@ -85,8 +84,8 @@ exports.uploadFile = async (req, res) => {
     const fileUrl = `${req.protocol}://${req.get("host")}/${file.path}`;
 
     const query = `
-      INSERT INTO files (folder_id, file_name, file_url, mime_type, size, uploaded_by)
-      VALUES ($1, $2, $3, $4, $5, $6)
+      INSERT INTO files (folder_id, file_name, file_url, mime_type, size, uploaded_by, room_name, church)
+      VALUES ($1, $2, $3, $4, $5, $6, $7, $8)
       RETURNING *;
     `;
     const result = await pool.query(query, [
@@ -96,6 +95,8 @@ exports.uploadFile = async (req, res) => {
       file.mimetype,
       file.size,
       userEmail,
+      room_name,
+      church
     ]);
 
     res.json(result.rows[0]);
@@ -105,7 +106,6 @@ exports.uploadFile = async (req, res) => {
   }
 };
 
-/** ✅ Delete file */
 exports.deleteFile = async (req, res) => {
   const { fileId } = req.params;
 
