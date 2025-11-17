@@ -32,6 +32,6 @@ router.post("/", createFolder);
 router.get("/:folderId/files", getFolderFiles);
 router.post("/:folderId/upload", upload.single("file"), uploadFile);
 router.delete("/files/:fileId", deleteFile);
-router.delete("/folders/:folderId", deleteFolder);
+router.delete("/:folderId", deleteFolder);
 
 module.exports = router;
