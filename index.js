@@ -37,6 +37,7 @@ const quizRoutes = require("./routes/quiz");
 const eventsRoutes = require("./routes/events");
 const rotaRoutes = require("./routes/rota");
 const folderRoutes = require("./routes/folders");
+const pushRoutes = require("./routes/pushRoutes");
 
 // Mount Routes
 app.use("/home", homeRoute);
@@ -51,6 +52,7 @@ app.use("/quiz", quizRoutes);
 app.use("/churchevent", eventsRoutes);
 app.use("/churchrota", rotaRoutes);
 app.use("/folders", folderRoutes);
+app.use(pushRoutes);
 
 //  Socket setup
 const http = require("http");
