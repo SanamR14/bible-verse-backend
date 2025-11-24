@@ -1,6 +1,5 @@
 // controllers/pushController.js
 const pool = require("../db");
-const fetch = require("node-fetch");
 
 // Save Expo push token
 exports.saveToken = async (req, res) => {
