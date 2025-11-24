@@ -1,110 +1,89 @@
-// controllers/pushController.js
 const pool = require("../db");
 
-// Save Expo push token
-exports.saveToken = async (req, res) => {
-  const { token } = req.body;
+// Save or update a user's push token
+exports.savePushToken = async (req, res) => {
+  const { userId, token } = req.body;
 
-  if (!token) {
-    return res.status(400).json({ error: "Push token is required" });
-  }
+  if (!userId || !token)
+    return res.status(400).json({ error: "Missing userId or token" });
 
   try {
-    const result = await pool.query(
-      `INSERT INTO expo_push_tokens (token) 
-       VALUES ($1)
-       ON CONFLICT (token) DO NOTHING
-       RETURNING *`,
-      [token]
+    await pool.query(
+      `INSERT INTO push_tokens (user_id, push_token)
+       VALUES ($1, $2)
+       ON CONFLICT (user_id) 
+       DO UPDATE SET push_token = EXCLUDED.push_token, updated_at = NOW()`,
+      [userId, token]
     );
 
-    return res.status(200).json({
-      success: true,
-      message: "Token saved",
-      data: result.rows[0] || { token },
-    });
+    res.status(200).json({ success: true, message: "Token saved" });
   } catch (err) {
-    console.error("Error saving push token:", err.message);
+    console.error("Error saving push token:", err);
     res.status(500).json({ error: "Failed to save token" });
   }
 };
 
-// Send notification to ALL saved tokens
-exports.sendPushToAll = async (req, res) => {
-  const { message, title = "📢 Notification" } = req.body;
-
-  if (!message) {
-    return res.status(400).json({ error: "Message required" });
-  }
+// Send push to one user
+exports.sendPushToOne = async (req, res) => {
+  const { userId, message } = req.body;
 
   try {
     const result = await pool.query(
-      "SELECT token FROM expo_push_tokens"
+      `SELECT push_token FROM push_tokens WHERE user_id = $1`,
+      [userId]
     );
 
-    if (result.rows.length === 0) {
-      return res.status(200).json({
-        success: false,
-        message: "No push tokens stored",
-      });
-    }
+    if (!result.rows[0])
+      return res.status(404).json({ error: "No token found for user" });
 
-    const tokens = result.rows.map((row) => row.token);
-
-    const expoMessages = tokens.map((token) => ({
-      to: token,
-      sound: "default",
-      title: title,
-      body: message,
-      data: { message },
-    }));
-
-    // Send to Expo push service
-    await fetch("https://exp.host/--/api/v2/push/send", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(expoMessages),
-    });
-
-    res.status(200).json({
-      success: true,
-      sent: tokens.length,
-      message: "Notifications sent",
-    });
-  } catch (err) {
-    console.error("Error sending notifications:", err.message);
-    res.status(500).json({ error: "Failed to send notifications" });
-  }
-};
-
-// Send push to a SINGLE token
-exports.sendPushToOne = async (req, res) => {
-  const { token, message, title = "📢 Notification" } = req.body;
-
-  if (!token || !message) {
-    return res.status(400).json({ error: "Token & message required" });
-  }
-
-  try {
     const payload = {
-      to: token,
+      to: result.rows[0].push_token,
       sound: "default",
-      title,
+      title: "New Notification",
       body: message,
     };
 
-    await fetch("https://exp.host/--/api/v2/push/send", {
+    const response = await fetch("https://exp.host/--/api/v2/push/send", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify([payload]),
+      body: JSON.stringify(payload),
     });
 
-    res.status(200).json({
-      success: true,
-      message: "Notification sent",
-    });
+    const data = await response.json();
+    res.status(200).json({ success: true, expo: data });
   } catch (err) {
-    console.error("Error sending push to single user:", err.message);
-    res.status(500).json({ error: "Failed to send push notification" });
+    console.error("Error sending push:", err);
+    res.status(500).json({ error: "Push sending failed" });
+  }
+};
+
+// Send push to all users
+exports.sendPushToAll = async (req, res) => {
+  const { message } = req.body;
+
+  try {
+    const tokensResult = await pool.query("SELECT push_token FROM push_tokens");
+    const tokens = tokensResult.rows.map((r) => r.push_token);
+
+    const payloads = tokens.map((token) => ({
+      to: token,
+      sound: "default",
+      title: "New Announcement",
+      body: message,
+    }));
+
+    const fetchPromises = payloads.map((p) =>
+      fetch("https://exp.host/--/api/v2/push/send", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(p),
+      }).then((r) => r.json())
+    );
+
+    const responses = await Promise.all(fetchPromises);
+    res.status(200).json({ success: true, expo: responses });
+  } catch (err) {
+    console.error("Error sending push to all:", err);
+    res.status(500).json({ error: "Push sending failed" });
   }
 };
