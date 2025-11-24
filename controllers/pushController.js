@@ -1,7 +1,7 @@
 const pool = require("../db");
 
 // Save or update a user's push token
-exports.savePushToken = async (req, res) => {
+exports.saveToken = async (req, res) => {
   const { userId, token } = req.body;
 
   if (!userId || !token)
